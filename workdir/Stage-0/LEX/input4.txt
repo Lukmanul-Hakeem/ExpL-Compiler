@@ -1,0 +1,9 @@
+// This is the first single-line comment
+int main() {
+    /* This is a multi-line comment
+       that spans multiple lines
+       and should be captured fully */
+    printf("Hello, World!\n"); // Inline comment
+    /* Another comment */
+    return 0;
+}
