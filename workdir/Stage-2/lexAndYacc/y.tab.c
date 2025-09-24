@@ -68,8 +68,6 @@
 /* First part of user prologue.  */
 #line 1 "parser.y"
 
-    // #include <stdio.h>
-    // #include <stdlib.h>
     #include "./../utils/parseTree.h"
     #include "./../utils/codeGeneration.h"
 
@@ -81,7 +79,7 @@
     void makeExecutableFile(struct tnode* node, FILE* fptr);
     extern FILE* yyin;
 
-#line 85 "y.tab.c"
+#line 83 "y.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -167,11 +165,11 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 16 "parser.y"
+#line 14 "parser.y"
 
     struct tnode* node;
 
-#line 175 "y.tab.c"
+#line 173 "y.tab.c"
 
 };
 typedef union YYSTYPE YYSTYPE;
@@ -548,8 +546,8 @@ static const yytype_int8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int8 yyrline[] =
 {
-       0,    31,    31,    41,    51,    55,    62,    63,    64,    68,
-      75,    82,    89,    91,    93,    95,    97,    99,   101
+       0,    29,    29,    35,    43,    47,    54,    55,    56,    60,
+      67,    74,    81,    83,    85,    87,    89,    91,    93
 };
 #endif
 
@@ -1359,132 +1357,126 @@ yyreduce:
   switch (yyn)
     {
   case 2:
-#line 32 "parser.y"
+#line 30 "parser.y"
         {
-            // generateCode($2, outputFile);
-            // printf("COMPLETED\n");
-            // exit(0);
-
             makeExecutableFile( (yyvsp[-2].node), outputFile);
             inorder((yyvsp[-2].node));
-            // printf("inorder is called\n");
+            exit(0); 
         }
-#line 1373 "y.tab.c"
+#line 1367 "y.tab.c"
     break;
 
   case 3:
-#line 42 "parser.y"
+#line 36 "parser.y"
         {
             printf("No statements.\n");
-            // exit(0);
+            exit(0);
+        }
+#line 1376 "y.tab.c"
+    break;
 
-            // inorder(NULL);
+  case 4:
+#line 44 "parser.y"
+        {
+            (yyval.node) = create_node(-1, NODE_TYPE_CONNECTOR, NULL, (yyvsp[-1].node), (yyvsp[0].node));
         }
 #line 1384 "y.tab.c"
     break;
 
-  case 4:
-#line 52 "parser.y"
+  case 5:
+#line 48 "parser.y"
         {
-            (yyval.node) = create_node(-1, NODE_TYPE_CONNECTOR, NULL, (yyvsp[-1].node), (yyvsp[0].node));
+            (yyval.node) = (yyvsp[0].node);
         }
 #line 1392 "y.tab.c"
     break;
 
-  case 5:
-#line 56 "parser.y"
-        {
-            (yyval.node) = (yyvsp[0].node);
-        }
-#line 1400 "y.tab.c"
-    break;
-
   case 6:
-#line 62 "parser.y"
+#line 54 "parser.y"
                   { (yyval.node) = (yyvsp[0].node); }
-#line 1406 "y.tab.c"
+#line 1398 "y.tab.c"
     break;
 
   case 7:
-#line 63 "parser.y"
+#line 55 "parser.y"
                   { (yyval.node) = (yyvsp[0].node); }
-#line 1412 "y.tab.c"
+#line 1404 "y.tab.c"
     break;
 
   case 8:
-#line 64 "parser.y"
+#line 56 "parser.y"
                   { (yyval.node) = (yyvsp[0].node); }
-#line 1418 "y.tab.c"
+#line 1410 "y.tab.c"
     break;
 
   case 9:
-#line 69 "parser.y"
+#line 61 "parser.y"
         {
             (yyval.node) = create_node(-1, NODE_TYPE_READ, NULL, (yyvsp[-2].node), NULL);
+        }
+#line 1418 "y.tab.c"
+    break;
+
+  case 10:
+#line 68 "parser.y"
+        {
+            (yyval.node) = create_node(-1, NODE_TYPE_WRITE, NULL, (yyvsp[-2].node), NULL);
         }
 #line 1426 "y.tab.c"
     break;
 
-  case 10:
-#line 76 "parser.y"
+  case 11:
+#line 75 "parser.y"
         {
-            (yyval.node) = create_node(-1, NODE_TYPE_WRITE, NULL, (yyvsp[-2].node), NULL);
+            (yyval.node) = create_node(-1, NODE_TYPE_ASSIGN, NULL, (yyvsp[-3].node), (yyvsp[-1].node));
         }
 #line 1434 "y.tab.c"
     break;
 
-  case 11:
-#line 83 "parser.y"
-        {
-            (yyval.node) = create_node(-1, NODE_TYPE_ASSIGN, NULL, (yyvsp[-3].node), (yyvsp[-1].node));
-        }
-#line 1442 "y.tab.c"
-    break;
-
   case 12:
-#line 90 "parser.y"
+#line 82 "parser.y"
         { (yyval.node) = create_node(-1, NODE_TYPE_PLUS, NULL, (yyvsp[-2].node), (yyvsp[0].node)); }
-#line 1448 "y.tab.c"
+#line 1440 "y.tab.c"
     break;
 
   case 13:
-#line 92 "parser.y"
+#line 84 "parser.y"
         { (yyval.node) = create_node(-1, NODE_TYPE_MINUS, NULL, (yyvsp[-2].node), (yyvsp[0].node)); }
-#line 1454 "y.tab.c"
+#line 1446 "y.tab.c"
     break;
 
   case 14:
-#line 94 "parser.y"
+#line 86 "parser.y"
         { (yyval.node) = create_node(-1, NODE_TYPE_MULT, NULL, (yyvsp[-2].node), (yyvsp[0].node)); }
-#line 1460 "y.tab.c"
+#line 1452 "y.tab.c"
     break;
 
   case 15:
-#line 96 "parser.y"
+#line 88 "parser.y"
         { (yyval.node) = create_node(-1, NODE_TYPE_DIV, NULL, (yyvsp[-2].node), (yyvsp[0].node)); }
-#line 1466 "y.tab.c"
+#line 1458 "y.tab.c"
     break;
 
   case 16:
-#line 98 "parser.y"
+#line 90 "parser.y"
         { (yyval.node) = (yyvsp[0].node); }
-#line 1472 "y.tab.c"
+#line 1464 "y.tab.c"
     break;
 
   case 17:
-#line 100 "parser.y"
+#line 92 "parser.y"
         { (yyval.node) = (yyvsp[0].node); }
-#line 1478 "y.tab.c"
+#line 1470 "y.tab.c"
     break;
 
   case 18:
-#line 102 "parser.y"
+#line 94 "parser.y"
         { (yyval.node) = (yyvsp[-1].node); }
-#line 1484 "y.tab.c"
+#line 1476 "y.tab.c"
     break;
 
 
-#line 1488 "y.tab.c"
+#line 1480 "y.tab.c"
 
       default: break;
     }
@@ -1716,7 +1708,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 105 "parser.y"
+#line 97 "parser.y"
 
 
 void makeExecutableFile(struct tnode* node, FILE* fptr){

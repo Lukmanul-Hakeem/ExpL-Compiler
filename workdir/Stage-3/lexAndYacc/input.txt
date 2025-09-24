@@ -1,0 +1,7 @@
+begin
+ read(a);
+ repeat{
+   write(a + 1);
+   read(a);
+ }until(a < 10);
+end;
