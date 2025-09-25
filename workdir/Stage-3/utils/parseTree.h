@@ -26,7 +26,9 @@ enum node_type {
     NODE_TYPE_NE,
     NODE_TYPE_WHILE,
     NODE_TYPE_DO_WHILE,
-    NODE_TYPE_REPEAT_UNTIL
+    NODE_TYPE_REPEAT_UNTIL,
+    NODE_TYPE_BREAK,
+    NODE_TYPE_CONTINUE
 };
 
 enum node_data_type {

@@ -67,20 +67,22 @@ extern int yydebug;
     DO = 273,
     REPEAT = 274,
     UNTIL = 275,
-    PLUS = 276,
-    MINUS = 277,
-    MULT = 278,
-    DIV = 279,
-    EQUAL = 280,
-    LT = 281,
-    GT = 282,
-    LE = 283,
-    GE = 284,
-    NOT = 285,
-    NE = 286,
-    EQ = 287,
-    NUM = 288,
-    ID = 289
+    BREAK = 276,
+    CONTINUE = 277,
+    PLUS = 278,
+    MINUS = 279,
+    MULT = 280,
+    DIV = 281,
+    EQUAL = 282,
+    LT = 283,
+    GT = 284,
+    LE = 285,
+    GE = 286,
+    NOT = 287,
+    NE = 288,
+    EQ = 289,
+    NUM = 290,
+    ID = 291
   };
 #endif
 /* Tokens.  */
@@ -102,20 +104,22 @@ extern int yydebug;
 #define DO 273
 #define REPEAT 274
 #define UNTIL 275
-#define PLUS 276
-#define MINUS 277
-#define MULT 278
-#define DIV 279
-#define EQUAL 280
-#define LT 281
-#define GT 282
-#define LE 283
-#define GE 284
-#define NOT 285
-#define NE 286
-#define EQ 287
-#define NUM 288
-#define ID 289
+#define BREAK 276
+#define CONTINUE 277
+#define PLUS 278
+#define MINUS 279
+#define MULT 280
+#define DIV 281
+#define EQUAL 282
+#define LT 283
+#define GT 284
+#define LE 285
+#define GE 286
+#define NOT 287
+#define NE 288
+#define EQ 289
+#define NUM 290
+#define ID 291
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
@@ -125,7 +129,7 @@ union YYSTYPE
 
     struct tnode* node;
 
-#line 129 "y.tab.h"
+#line 133 "y.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

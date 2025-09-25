@@ -1,7 +1,16 @@
 begin
  read(a);
- repeat{
-   write(a + 1);
-   read(a);
- }until(a < 10);
+ while(a <= 5){
+  b = a;
+  while(b <= 5){
+    if(b == 4) then
+        b = b + 1;
+        continue; 
+    endif;
+    write(b);
+    b = b + 1;
+  }
+  a = a + 1;
+ }
 end;
+

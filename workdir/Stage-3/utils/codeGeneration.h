@@ -32,10 +32,10 @@ int  generate_arithmetic_code(tnode *root, FILE *fptr);
 void generate_assignment_code(tnode *node, FILE *fptr);
 int generate_boolean_code(tnode* root, FILE* fptr);
 
-void code_Generation(tnode* root, FILE* fptr);
+void code_Generation(tnode* root, FILE* fptr, int temp);
 
-void generate_if_code(tnode* root, FILE* fptr);
-void generate_if_else_code(tnode* root, FILE* fptr);
+void generate_if_code(tnode* root, FILE* fptr, int loopLabel);
+void generate_if_else_code(tnode* root, FILE* fptr, int loopLabel);
 
 
 #endif 

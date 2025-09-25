@@ -1,6 +1,7 @@
 #include "codeGeneration.h"
 
 int label = 0;
+int conditionLabel = 0;
 
 int getReg()
 {
@@ -191,11 +192,11 @@ int generate_boolean_code(tnode* root, FILE* fptr){
         if(root->nodetype == NODE_TYPE_LT){
             fprintf(fptr, "LT R%d, R%d\n", left, right);
         }else if(root->nodetype == NODE_TYPE_LE){
-            fprintf(fptr, "LTE R%d, R%d\n", left, right);
+            fprintf(fptr, "LE R%d, R%d\n", left, right);
         }else if(root->nodetype == NODE_TYPE_GT){
             fprintf(fptr, "GT R%d, R%d\n", left, right);
         }else if(root->nodetype == NODE_TYPE_GE){
-            fprintf(fptr, "GTE R%d, R%d\n", left, right);
+            fprintf(fptr, "GE R%d, R%d\n", left, right);
         }else if(root->nodetype == NODE_TYPE_EQ){
             fprintf(fptr, "EQ R%d, R%d\n", left, right);
         }else if(root->nodetype == NODE_TYPE_NE){
@@ -208,20 +209,20 @@ int generate_boolean_code(tnode* root, FILE* fptr){
     }
 }
 
-void generate_if_else_code(tnode* root, FILE* fptr){
+void generate_if_else_code(tnode* root, FILE* fptr, int loopLabel){
 
     int reg = generate_boolean_code(root->left, fptr);
-    int temp = label++;
+    int temp = conditionLabel++;
 
     fprintf(fptr, "JZ R%d, CONDITION_FALSE_%d\n", reg, temp);
 
-    code_Generation(root->right->left, fptr);
+    code_Generation(root->right->left, fptr, loopLabel);
 
     fprintf(fptr, "JMP END_IF_ELSE%d\n", temp);
 
     fprintf(fptr, "CONDITION_FALSE_%d:\n", temp);
 
-    code_Generation(root->right->right, fptr);
+    code_Generation(root->right->right, fptr, loopLabel);
 
     fprintf(fptr, "END_IF_ELSE%d:\n", temp);
     
@@ -230,14 +231,14 @@ void generate_if_else_code(tnode* root, FILE* fptr){
 
 }
 
-void generate_if_code(tnode* root, FILE* fptr){
+void generate_if_code(tnode* root, FILE* fptr, int loopLabel){
 
     int reg = generate_boolean_code(root->left, fptr);
-    int temp = label++;
+    int temp = conditionLabel++;
 
     fprintf(fptr, "JZ R%d, CONDITION_FALSE_%d\n", reg, temp);
 
-    code_Generation(root->right, fptr);
+    code_Generation(root->right, fptr, loopLabel);
 
     fprintf(fptr, "JMP END_IF%d\n", temp);
 
@@ -254,10 +255,10 @@ void generate_while_code(tnode* root, FILE* fptr){
     int temp = label++;
     fprintf(fptr, "LOOP%d:\n", temp);
     int reg = generate_boolean_code(root->left, fptr);
-    fprintf(fptr, "JZ R%d, END_LOOP%d\n", reg, temp);
-    code_Generation(root->right,fptr);
+    fprintf(fptr, "JZ R%d, END%d\n", reg, temp);
+    code_Generation(root->right,fptr, temp);
     fprintf(fptr, "JMP LOOP%d\n", temp);
-    fprintf(fptr, "END_LOOP%d:\n", temp);
+    fprintf(fptr, "END%d:\n", temp);
 
     freeReg(reg);
 }
@@ -266,12 +267,12 @@ void generate_do_while_code(tnode* root, FILE* fptr){
 
     int temp = label++;
 
-    fprintf(fptr, "DOWHILE%d:\n", temp);
-    code_Generation(root->right, fptr);
+    fprintf(fptr, "LOOP%d:\n", temp);
+    code_Generation(root->right, fptr, temp);
     int reg = generate_boolean_code(root->left, fptr);
-    fprintf(fptr, "JZ R%d, END_DOWHILE%d\n", reg, temp);
-    fprintf(fptr, "JMP DOWHILE%d\n", temp);
-    fprintf(fptr, "END_DOWHILE%d:\n", temp);
+    fprintf(fptr, "JZ R%d, END%d\n", reg, temp);
+    fprintf(fptr, "JMP LOOP%d\n", temp);
+    fprintf(fptr, "END%d:\n", temp);
 
     freeReg(reg);
 
@@ -281,23 +282,23 @@ void generate_repeat_until_code(tnode* root, FILE* fptr){
 
     int temp = label++;
 
-    fprintf(fptr, "REPEAT_UNTIL%d:\n", temp);
-    code_Generation(root->right, fptr);
+    fprintf(fptr, "LOOP%d:\n", temp);
+    code_Generation(root->right, fptr, temp);
     int reg = generate_boolean_code(root->left, fptr);
-    fprintf(fptr, "JNZ R%d, END_REPEAT_UNTIL%d\n", reg, temp);
-    fprintf(fptr, "JMP REPEAT_UNTIL%d\n", temp);
-    fprintf(fptr, "END_REPEAT_UNTIL%d:\n", temp);
+    fprintf(fptr, "JNZ R%d, END%d\n", reg, temp);
+    fprintf(fptr, "JMP LOOP%d\n", temp);
+    fprintf(fptr, "END%d:\n", temp);
 
     freeReg(reg);
 }
 
-void code_Generation(tnode* root, FILE* fptr){
+void code_Generation(tnode* root, FILE* fptr,int temp){
     if(root == NULL)return;
     // printf("%d ", root->nodetype);
 
     if(root->nodetype == NODE_TYPE_CONNECTOR){
-        code_Generation(root->left, fptr);
-        code_Generation(root->right, fptr);
+        code_Generation(root->left, fptr, temp);
+        code_Generation(root->right, fptr, temp);
     }else if(root->nodetype == NODE_TYPE_READ){
         readSystemCall(root, fptr);
     }else if(root->nodetype == NODE_TYPE_WRITE){
@@ -305,15 +306,19 @@ void code_Generation(tnode* root, FILE* fptr){
     }else if(root->nodetype == NODE_TYPE_ASSIGN){
         generate_assignment_code(root, fptr);
     }else if(root->nodetype == NODE_TYPE_IF_ELSE){
-        generate_if_else_code(root, fptr);
+        generate_if_else_code(root, fptr, temp);
     }else if(root->nodetype == NODE_TYPE_IF){
-        generate_if_code(root, fptr);
+        generate_if_code(root, fptr, temp);
     }else if(root->nodetype == NODE_TYPE_WHILE){
         generate_while_code(root, fptr);
     }else if(root->nodetype == NODE_TYPE_DO_WHILE){
         generate_do_while_code(root, fptr);
     }else if(root->nodetype == NODE_TYPE_REPEAT_UNTIL){
         generate_repeat_until_code(root, fptr);
+    }else if(root->nodetype == NODE_TYPE_BREAK){
+        fprintf( fptr, "JMP END%d\n", temp);
+    }else if( root-> nodetype == NODE_TYPE_CONTINUE){
+        fprintf( fptr, "JMP LOOP%d\n", temp);
     }
 
     return ;

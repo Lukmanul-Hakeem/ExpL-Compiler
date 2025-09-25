@@ -20,11 +20,11 @@
 %token LPAREN RPAREN LBRACE RBRACE
 %token PUNCTUATION NEWLINE
 %token IF ELSE THEN ENDIF 
-%token WHILE DO REPEAT UNTIL
+%token WHILE DO REPEAT UNTIL BREAK CONTINUE
 %token PLUS MINUS MULT DIV EQUAL LT GT LE GE NOT NE EQ
 %token <node> NUM ID
 
-%type  <node> Program Slist Stmt InputStmt OutputStmt AsgStmt E IfStmt whileStmt doWhileStmt repeatStmt
+%type  <node> Program Slist Stmt InputStmt OutputStmt AsgStmt E IfStmt whileStmt doWhileStmt repeatStmt breakStmt continueStmt
 
 %right EQUAL
 %left LT GT LE GE EQ NE
@@ -67,6 +67,8 @@ Stmt
     | whileStmt   { $$ = $1; }
     | doWhileStmt { $$ = $1; }
     | repeatStmt  { $$ = $1; }
+    | breakStmt   { $$ = $1; }
+    | continueStmt{ $$ = $1; }
     ;
 
 InputStmt
@@ -132,6 +134,20 @@ repeatStmt
                 yyerror("Condition must be boolean!\n");
             }
             $$ = create_node(-1, DATA_TYPE_VOID, NODE_TYPE_REPEAT_UNTIL, NULL, $7, $3);
+        }
+    ;
+
+breakStmt
+    : BREAK PUNCTUATION
+        {
+            $$ = create_node(-1, DATA_TYPE_VOID, NODE_TYPE_BREAK, NULL, NULL, NULL);
+        }
+    ;
+
+continueStmt
+    : CONTINUE PUNCTUATION
+        {
+            $$ = create_node(-1, DATA_TYPE_VOID, NODE_TYPE_CONTINUE, NULL, NULL, NULL);
         }
     ;
 
@@ -248,7 +264,7 @@ E
 void makeExecutableFile(struct tnode* node, FILE* fptr){
 
     generateHeader(fptr);
-    code_Generation(node, fptr);
+    code_Generation(node, fptr, -1);
     exitProgram(fptr);
 
 }
