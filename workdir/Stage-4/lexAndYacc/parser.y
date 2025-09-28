@@ -1,13 +1,17 @@
 %{
     #include "./../utils/parseTree.h"
+    #include "./../utils/codeGeneration.h"
     #include "./../GlobalSymbolTable/GlobalSymbolTable.h"
 
-    FILE* inputFile;  
+    FILE* outputFile; 
+    FILE* inputFile;   
 
     void yyerror(const char* error);
     int yylex(void);
 
     int Type = DATA_TYPE_VOID;
+
+    void makeExecutableFile(struct tnode* node, FILE* fptr);
     extern FILE* yyin;
 %}
 
@@ -87,8 +91,8 @@ VarList
 Program
     : PBEGIN Slist END PUNCTUATION
         {
-            // makeExecutableFile( $2, outputFile);
             inorder($2);
+            makeExecutableFile( $2, outputFile);
             // evaluate($2);
         }
     | PBEGIN END PUNCTUATION
@@ -349,20 +353,35 @@ E
 
 %%
 
+
+void makeExecutableFile(struct tnode* node, FILE* fptr){
+
+    generateHeader(fptr);
+    code_Generation(node, fptr, -1);
+    exitProgram(fptr);
+
+}
+
 void yyerror(const char* error) {
     fprintf(stderr, "Error: %s\n", error);
     exit(0);
 }
 
-int main(int argc, char** argv){
-    if(argc <= 1){
-        yyerror("NO INPUT FILE\n");
+int main(int argc, char** argv) {
+    if (argc < 3) {
+        fprintf(stderr, "Usage: %s <input> <output>\n", argv[0]);
+        return 1;
     }
-
-    FILE* inputFile = fopen(argv[1], "r");
+    inputFile = fopen(argv[1], "r");
+    outputFile = fopen(argv[2], "w");
+    if (!inputFile || !outputFile) {
+        perror("File opening failed");
+        return 1;
+    }
     yyin = inputFile;
     yyparse();
     fclose(inputFile);
-
+    fclose(outputFile);
     return 0;
+
 }

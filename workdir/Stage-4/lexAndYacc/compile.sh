@@ -22,6 +22,6 @@ flex $LEXER
 
 # Step 3: Compile all C files together
 echo "Compiling with GCC..."
-gcc y.tab.c lex.yy.c ./../GlobalSymbolTable/GlobalSymbolTable.c ./../utils/parseTree.c -o $OUTPUT
+gcc y.tab.c lex.yy.c ./../GlobalSymbolTable/GlobalSymbolTable.c ./../utils/parseTree.c ./../utils/codeGeneration.c -o $OUTPUT
 
 echo "Build successful! Executable: $OUTPUT"

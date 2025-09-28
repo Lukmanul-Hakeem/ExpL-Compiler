@@ -5,13 +5,5 @@ enddecl
 
 begin
     read(num);
-    sum = 0;
-    while (num != 0){
-      sum = sum + num;
-      read(num);
-    }
-    write("sum is:");
-    write(sum);
-    mesg = "good bye";
-    write(mesg);
+    write(num);
 end;

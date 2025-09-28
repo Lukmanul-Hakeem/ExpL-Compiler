@@ -69,17 +69,21 @@
 #line 1 "parser.y"
 
     #include "./../utils/parseTree.h"
+    #include "./../utils/codeGeneration.h"
     #include "./../GlobalSymbolTable/GlobalSymbolTable.h"
 
-    FILE* inputFile;  
+    FILE* outputFile; 
+    FILE* inputFile;   
 
     void yyerror(const char* error);
     int yylex(void);
 
     int Type = DATA_TYPE_VOID;
+
+    void makeExecutableFile(struct tnode* node, FILE* fptr);
     extern FILE* yyin;
 
-#line 83 "y.tab.c"
+#line 87 "y.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -215,11 +219,11 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 14 "parser.y"
+#line 18 "parser.y"
 
     tnode* node;
 
-#line 223 "y.tab.c"
+#line 227 "y.tab.c"
 
 };
 typedef union YYSTYPE YYSTYPE;
@@ -598,11 +602,11 @@ static const yytype_int8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,    40,    40,    46,    49,    53,    54,    58,    62,    63,
-      67,    76,    88,    94,   102,   106,   114,   115,   116,   117,
-     118,   119,   120,   121,   122,   126,   141,   149,   172,   181,
-     193,   204,   214,   224,   231,   240,   248,   256,   264,   273,
-     282,   291,   300,   309,   318,   327,   329,   331,   343
+       0,    44,    44,    50,    53,    57,    58,    62,    66,    67,
+      71,    80,    92,    98,   106,   110,   118,   119,   120,   121,
+     122,   123,   124,   125,   126,   130,   145,   153,   176,   185,
+     197,   208,   218,   228,   235,   244,   252,   260,   268,   277,
+     286,   295,   304,   313,   322,   331,   333,   335,   347
 };
 #endif
 
@@ -1496,33 +1500,33 @@ yyreduce:
   switch (yyn)
     {
   case 2:
-#line 41 "parser.y"
+#line 45 "parser.y"
         {
             exit(0);
         }
-#line 1504 "y.tab.c"
+#line 1508 "y.tab.c"
     break;
 
   case 3:
-#line 47 "parser.y"
+#line 51 "parser.y"
         { print_symbol_table(); }
-#line 1510 "y.tab.c"
+#line 1514 "y.tab.c"
     break;
 
   case 8:
-#line 62 "parser.y"
+#line 66 "parser.y"
             { Type = DATA_TYPE_INTEGER; }
-#line 1516 "y.tab.c"
+#line 1520 "y.tab.c"
     break;
 
   case 9:
-#line 63 "parser.y"
+#line 67 "parser.y"
             { Type = DATA_TYPE_STRING; }
-#line 1522 "y.tab.c"
+#line 1526 "y.tab.c"
     break;
 
   case 10:
-#line 68 "parser.y"
+#line 72 "parser.y"
         {
             Stnode* temp = Lookup((yyvsp[0].node)->varname);
             if(temp){
@@ -1531,11 +1535,11 @@ yyreduce:
             }
             Install((yyvsp[0].node)->varname, Type, 1);
         }
-#line 1535 "y.tab.c"
+#line 1539 "y.tab.c"
     break;
 
   case 11:
-#line 77 "parser.y"
+#line 81 "parser.y"
         {
             Stnode* temp = Lookup((yyvsp[0].node)->varname);
             if(temp){
@@ -1544,100 +1548,100 @@ yyreduce:
             }
             Install((yyvsp[0].node)->varname, Type, 1);
         }
-#line 1548 "y.tab.c"
+#line 1552 "y.tab.c"
     break;
 
   case 12:
-#line 89 "parser.y"
+#line 93 "parser.y"
         {
-            // makeExecutableFile( $2, outputFile);
             inorder((yyvsp[-2].node));
+            makeExecutableFile( (yyvsp[-2].node), outputFile);
             // evaluate($2);
         }
-#line 1558 "y.tab.c"
+#line 1562 "y.tab.c"
     break;
 
   case 13:
-#line 95 "parser.y"
+#line 99 "parser.y"
         {
             printf("No statements.\n");
             exit(0);
         }
-#line 1567 "y.tab.c"
+#line 1571 "y.tab.c"
     break;
 
   case 14:
-#line 103 "parser.y"
+#line 107 "parser.y"
         {
             (yyval.node) = create_node(-1, NULL, DATA_TYPE_VOID, NODE_TYPE_CONNECTOR, NULL, NULL, (yyvsp[-1].node), (yyvsp[0].node));
         }
-#line 1575 "y.tab.c"
+#line 1579 "y.tab.c"
     break;
 
   case 15:
-#line 107 "parser.y"
+#line 111 "parser.y"
         {
             (yyval.node) = (yyvsp[0].node);
         }
-#line 1583 "y.tab.c"
+#line 1587 "y.tab.c"
     break;
 
   case 16:
-#line 114 "parser.y"
+#line 118 "parser.y"
                   { (yyval.node) = (yyvsp[0].node); }
-#line 1589 "y.tab.c"
+#line 1593 "y.tab.c"
     break;
 
   case 17:
-#line 115 "parser.y"
+#line 119 "parser.y"
                   { (yyval.node) = (yyvsp[0].node); }
-#line 1595 "y.tab.c"
+#line 1599 "y.tab.c"
     break;
 
   case 18:
-#line 116 "parser.y"
+#line 120 "parser.y"
                   { (yyval.node) = (yyvsp[0].node); }
-#line 1601 "y.tab.c"
+#line 1605 "y.tab.c"
     break;
 
   case 19:
-#line 117 "parser.y"
+#line 121 "parser.y"
                   { (yyval.node) = (yyvsp[0].node); }
-#line 1607 "y.tab.c"
+#line 1611 "y.tab.c"
     break;
 
   case 20:
-#line 118 "parser.y"
+#line 122 "parser.y"
                   { (yyval.node) = (yyvsp[0].node); }
-#line 1613 "y.tab.c"
+#line 1617 "y.tab.c"
     break;
 
   case 21:
-#line 119 "parser.y"
+#line 123 "parser.y"
                   { (yyval.node) = (yyvsp[0].node); }
-#line 1619 "y.tab.c"
+#line 1623 "y.tab.c"
     break;
 
   case 22:
-#line 120 "parser.y"
+#line 124 "parser.y"
                   { (yyval.node) = (yyvsp[0].node); }
-#line 1625 "y.tab.c"
+#line 1629 "y.tab.c"
     break;
 
   case 23:
-#line 121 "parser.y"
+#line 125 "parser.y"
                   { (yyval.node) = (yyvsp[0].node); }
-#line 1631 "y.tab.c"
+#line 1635 "y.tab.c"
     break;
 
   case 24:
-#line 122 "parser.y"
+#line 126 "parser.y"
                   { (yyval.node) = (yyvsp[0].node); }
-#line 1637 "y.tab.c"
+#line 1641 "y.tab.c"
     break;
 
   case 25:
-#line 127 "parser.y"
+#line 131 "parser.y"
         {
             Stnode* temp = Lookup((yyvsp[-2].node)->varname);
             if(temp == NULL){
@@ -1649,20 +1653,20 @@ yyreduce:
 
             (yyval.node) = create_node(-1, NULL, DATA_TYPE_VOID, NODE_TYPE_READ, NULL, NULL, (yyvsp[-2].node), NULL);
         }
-#line 1653 "y.tab.c"
+#line 1657 "y.tab.c"
     break;
 
   case 26:
-#line 142 "parser.y"
+#line 146 "parser.y"
         {
             if((yyvsp[-2].node)->type == DATA_TYPE_INTEGER || (yyvsp[-2].node)->type == DATA_TYPE_STRING) (yyval.node) = create_node(-1, NULL, DATA_TYPE_VOID, NODE_TYPE_WRITE, NULL, NULL, (yyvsp[-2].node), NULL);
             else yyerror("NODE TYPE MISMATCH IN WRITE\n");
         }
-#line 1662 "y.tab.c"
+#line 1666 "y.tab.c"
     break;
 
   case 27:
-#line 150 "parser.y"
+#line 154 "parser.y"
         {
             Stnode* temp = Lookup((yyvsp[-3].node)->varname);
             if(temp == NULL){
@@ -1680,11 +1684,11 @@ yyreduce:
                 yyerror("nodeType MisMatch - ASSIGN!\n");
             }
         }
-#line 1684 "y.tab.c"
+#line 1688 "y.tab.c"
     break;
 
   case 28:
-#line 173 "parser.y"
+#line 177 "parser.y"
         {
             if((yyvsp[-7].node)->type != DATA_TYPE_BOOLEAN){
                 yyerror("Condition in IF must be boolean\n");
@@ -1693,11 +1697,11 @@ yyreduce:
             tnode* connectorNode = create_node(-1, NULL, DATA_TYPE_VOID, NODE_TYPE_CONNECTOR, NULL, NULL, (yyvsp[-4].node), (yyvsp[-2].node));
             (yyval.node) = create_node(-1, NULL, DATA_TYPE_VOID, NODE_TYPE_IF_ELSE, NULL, NULL, (yyvsp[-7].node), connectorNode);
         }
-#line 1697 "y.tab.c"
+#line 1701 "y.tab.c"
     break;
 
   case 29:
-#line 182 "parser.y"
+#line 186 "parser.y"
         {
 
             if((yyvsp[-5].node)->type != DATA_TYPE_BOOLEAN){
@@ -1706,11 +1710,11 @@ yyreduce:
 
             (yyval.node) = create_node(-1, NULL, DATA_TYPE_VOID, NODE_TYPE_IF, NULL, NULL, (yyvsp[-5].node), (yyvsp[-2].node));
         }
-#line 1710 "y.tab.c"
+#line 1714 "y.tab.c"
     break;
 
   case 30:
-#line 194 "parser.y"
+#line 198 "parser.y"
         {
             if((yyvsp[-4].node)->type != DATA_TYPE_BOOLEAN){
                 yyerror("Condition must be boolean!\n");
@@ -1718,49 +1722,49 @@ yyreduce:
 
             (yyval.node) = create_node(-1, NULL, DATA_TYPE_VOID, NODE_TYPE_WHILE, NULL, NULL, (yyvsp[-4].node), (yyvsp[-1].node));
         }
-#line 1722 "y.tab.c"
+#line 1726 "y.tab.c"
     break;
 
   case 31:
-#line 205 "parser.y"
+#line 209 "parser.y"
         {
             if((yyvsp[-2].node)->type != DATA_TYPE_BOOLEAN){
                 yyerror("Condition must be boolean!\n");
             }
             (yyval.node) = create_node(-1, NULL, DATA_TYPE_VOID, NODE_TYPE_DO_WHILE, NULL, NULL, (yyvsp[-2].node), (yyvsp[-6].node));
         }
-#line 1733 "y.tab.c"
+#line 1737 "y.tab.c"
     break;
 
   case 32:
-#line 215 "parser.y"
+#line 219 "parser.y"
         {
             if((yyvsp[-2].node)->type != DATA_TYPE_BOOLEAN){
                 yyerror("Condition must be boolean!\n");
             }
             (yyval.node) = create_node(-1, NULL, DATA_TYPE_VOID, NODE_TYPE_REPEAT_UNTIL, NULL, NULL, (yyvsp[-2].node), (yyvsp[-6].node));
         }
-#line 1744 "y.tab.c"
+#line 1748 "y.tab.c"
     break;
 
   case 33:
-#line 225 "parser.y"
+#line 229 "parser.y"
         {
             (yyval.node) = create_node(-1, NULL, DATA_TYPE_VOID, NODE_TYPE_BREAK, NULL, NULL, NULL, NULL);
         }
-#line 1752 "y.tab.c"
+#line 1756 "y.tab.c"
     break;
 
   case 34:
-#line 232 "parser.y"
+#line 236 "parser.y"
         {
             (yyval.node) = create_node(-1, NULL, DATA_TYPE_VOID, NODE_TYPE_CONTINUE, NULL, NULL, NULL, NULL);
         }
-#line 1760 "y.tab.c"
+#line 1764 "y.tab.c"
     break;
 
   case 35:
-#line 241 "parser.y"
+#line 245 "parser.y"
         { 
             if( !((yyvsp[-2].node)->type == DATA_TYPE_INTEGER && (yyvsp[0].node)->type == DATA_TYPE_INTEGER) ){
                 yyerror("nodeType MisMatch!\n");
@@ -1768,11 +1772,11 @@ yyreduce:
 
             (yyval.node) = create_node(-1, NULL, DATA_TYPE_INTEGER, NODE_TYPE_PLUS, NULL, NULL, (yyvsp[-2].node), (yyvsp[0].node)); 
         }
-#line 1772 "y.tab.c"
+#line 1776 "y.tab.c"
     break;
 
   case 36:
-#line 249 "parser.y"
+#line 253 "parser.y"
         { 
             if( !((yyvsp[-2].node)->type == DATA_TYPE_INTEGER && (yyvsp[0].node)->type == DATA_TYPE_INTEGER) ){
                 yyerror("nodeType MisMatch!\n");
@@ -1780,11 +1784,11 @@ yyreduce:
 
             (yyval.node) = create_node(-1, NULL, DATA_TYPE_INTEGER, NODE_TYPE_MINUS, NULL, NULL, (yyvsp[-2].node), (yyvsp[0].node)); 
         }
-#line 1784 "y.tab.c"
+#line 1788 "y.tab.c"
     break;
 
   case 37:
-#line 257 "parser.y"
+#line 261 "parser.y"
         { 
             if( !((yyvsp[-2].node)->type == DATA_TYPE_INTEGER && (yyvsp[0].node)->type == DATA_TYPE_INTEGER) ){
                 yyerror("nodeType MisMatch!\n");
@@ -1792,11 +1796,11 @@ yyreduce:
 
             (yyval.node) = create_node(-1, NULL, DATA_TYPE_INTEGER, NODE_TYPE_MULT, NULL, NULL, (yyvsp[-2].node), (yyvsp[0].node)); 
         }
-#line 1796 "y.tab.c"
+#line 1800 "y.tab.c"
     break;
 
   case 38:
-#line 265 "parser.y"
+#line 269 "parser.y"
         { 
             if( !((yyvsp[-2].node)->type == DATA_TYPE_INTEGER && (yyvsp[0].node)->type == DATA_TYPE_INTEGER) ){
                 yyerror("nodeType MisMatch!\n");
@@ -1804,11 +1808,11 @@ yyreduce:
 
             (yyval.node) = create_node(-1, NULL, DATA_TYPE_INTEGER, NODE_TYPE_DIV, NULL, NULL, (yyvsp[-2].node), (yyvsp[0].node)); 
         }
-#line 1808 "y.tab.c"
+#line 1812 "y.tab.c"
     break;
 
   case 39:
-#line 274 "parser.y"
+#line 278 "parser.y"
         { 
             if( !((yyvsp[-2].node)->type == DATA_TYPE_INTEGER && (yyvsp[0].node)->type == DATA_TYPE_INTEGER) ){
                 yyerror("nodeType MisMatch!\n");
@@ -1816,11 +1820,11 @@ yyreduce:
 
             (yyval.node) = create_node(-1, NULL, DATA_TYPE_BOOLEAN, NODE_TYPE_LT, NULL, NULL, (yyvsp[-2].node), (yyvsp[0].node)); 
         }
-#line 1820 "y.tab.c"
+#line 1824 "y.tab.c"
     break;
 
   case 40:
-#line 283 "parser.y"
+#line 287 "parser.y"
         { 
             if( !((yyvsp[-2].node)->type == DATA_TYPE_INTEGER && (yyvsp[0].node)->type == DATA_TYPE_INTEGER) ){
                 yyerror("nodeType MisMatch!\n");
@@ -1828,11 +1832,11 @@ yyreduce:
 
             (yyval.node) = create_node(-1, NULL, DATA_TYPE_BOOLEAN, NODE_TYPE_GT, NULL, NULL, (yyvsp[-2].node), (yyvsp[0].node)); 
         }
-#line 1832 "y.tab.c"
+#line 1836 "y.tab.c"
     break;
 
   case 41:
-#line 292 "parser.y"
+#line 296 "parser.y"
         { 
             if( !((yyvsp[-2].node)->type == DATA_TYPE_INTEGER && (yyvsp[0].node)->type == DATA_TYPE_INTEGER) ){
                 yyerror("nodeType MisMatch!\n");
@@ -1840,11 +1844,11 @@ yyreduce:
 
             (yyval.node) = create_node(-1, NULL, DATA_TYPE_BOOLEAN, NODE_TYPE_LE, NULL, NULL, (yyvsp[-2].node), (yyvsp[0].node)); 
         }
-#line 1844 "y.tab.c"
+#line 1848 "y.tab.c"
     break;
 
   case 42:
-#line 301 "parser.y"
+#line 305 "parser.y"
         { 
             if( !((yyvsp[-2].node)->type == DATA_TYPE_INTEGER && (yyvsp[0].node)->type == DATA_TYPE_INTEGER) ){
                 yyerror("nodeType MisMatch!\n");
@@ -1852,11 +1856,11 @@ yyreduce:
 
             (yyval.node) = create_node(-1, NULL, DATA_TYPE_BOOLEAN, NODE_TYPE_GE, NULL, NULL, (yyvsp[-2].node), (yyvsp[0].node));   
         }
-#line 1856 "y.tab.c"
+#line 1860 "y.tab.c"
     break;
 
   case 43:
-#line 310 "parser.y"
+#line 314 "parser.y"
         { 
             if( !((yyvsp[-2].node)->type == DATA_TYPE_INTEGER && (yyvsp[0].node)->type == DATA_TYPE_INTEGER) ){
                 yyerror("nodeType MisMatch!\n");
@@ -1864,11 +1868,11 @@ yyreduce:
 
             (yyval.node) = create_node(-1, NULL, DATA_TYPE_BOOLEAN, NODE_TYPE_EQ, NULL, NULL, (yyvsp[-2].node), (yyvsp[0].node)); 
         }
-#line 1868 "y.tab.c"
+#line 1872 "y.tab.c"
     break;
 
   case 44:
-#line 319 "parser.y"
+#line 323 "parser.y"
         { 
             if( !((yyvsp[-2].node)->type == DATA_TYPE_INTEGER && (yyvsp[0].node)->type == DATA_TYPE_INTEGER) ){
                 yyerror("nodeType MisMatch!\n");
@@ -1876,23 +1880,23 @@ yyreduce:
 
             (yyval.node) = create_node(-1, NULL, DATA_TYPE_BOOLEAN,  NODE_TYPE_NE, NULL, NULL, (yyvsp[-2].node), (yyvsp[0].node)); 
         }
-#line 1880 "y.tab.c"
+#line 1884 "y.tab.c"
     break;
 
   case 45:
-#line 328 "parser.y"
+#line 332 "parser.y"
         { (yyval.node) = (yyvsp[0].node); }
-#line 1886 "y.tab.c"
+#line 1890 "y.tab.c"
     break;
 
   case 46:
-#line 330 "parser.y"
+#line 334 "parser.y"
         { (yyval.node) = (yyvsp[0].node); }
-#line 1892 "y.tab.c"
+#line 1896 "y.tab.c"
     break;
 
   case 47:
-#line 332 "parser.y"
+#line 336 "parser.y"
         { 
             Stnode* temp = Lookup((yyvsp[0].node)->varname);
             if(temp == NULL){
@@ -1904,19 +1908,19 @@ yyreduce:
             (yyval.node) = (yyvsp[0].node); 
 
         }
-#line 1908 "y.tab.c"
+#line 1912 "y.tab.c"
     break;
 
   case 48:
-#line 344 "parser.y"
+#line 348 "parser.y"
         { 
             (yyval.node) = (yyvsp[-1].node); 
         }
-#line 1916 "y.tab.c"
+#line 1920 "y.tab.c"
     break;
 
 
-#line 1920 "y.tab.c"
+#line 1924 "y.tab.c"
 
       default: break;
     }
@@ -2148,23 +2152,38 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 350 "parser.y"
+#line 354 "parser.y"
 
+
+
+void makeExecutableFile(struct tnode* node, FILE* fptr){
+
+    generateHeader(fptr);
+    code_Generation(node, fptr, -1);
+    exitProgram(fptr);
+
+}
 
 void yyerror(const char* error) {
     fprintf(stderr, "Error: %s\n", error);
     exit(0);
 }
 
-int main(int argc, char** argv){
-    if(argc <= 1){
-        yyerror("NO INPUT FILE\n");
+int main(int argc, char** argv) {
+    if (argc < 3) {
+        fprintf(stderr, "Usage: %s <input> <output>\n", argv[0]);
+        return 1;
     }
-
-    FILE* inputFile = fopen(argv[1], "r");
+    inputFile = fopen(argv[1], "r");
+    outputFile = fopen(argv[2], "w");
+    if (!inputFile || !outputFile) {
+        perror("File opening failed");
+        return 1;
+    }
     yyin = inputFile;
     yyparse();
     fclose(inputFile);
-
+    fclose(outputFile);
     return 0;
+
 }
