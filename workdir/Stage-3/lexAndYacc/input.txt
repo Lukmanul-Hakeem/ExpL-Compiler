@@ -1,15 +1,16 @@
 begin
- read(a);
- while(a <= 5){
+ a = 1;
+ while(a <= 10){
   b = a;
-  while(b <= 5){
-    if(b == 4) then
+  while(b <= 10){
+    if(b == 5) then
         b = b + 1;
-        continue; 
+        break; 
     endif;
     write(b);
     b = b + 1;
   }
+  if(a == 5) then break; endif;
   a = a + 1;
  }
 end;

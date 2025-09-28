@@ -37,7 +37,7 @@ Program
     : PBEGIN Slist END PUNCTUATION
         {
             makeExecutableFile( $2, outputFile);
-            // inorder($2);
+            inorder($2);
             // evaluate($2);
             exit(0); 
         }

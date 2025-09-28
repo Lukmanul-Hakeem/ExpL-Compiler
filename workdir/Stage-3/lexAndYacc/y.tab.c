@@ -1476,7 +1476,7 @@ yyreduce:
 #line 38 "parser.y"
         {
             makeExecutableFile( (yyvsp[-2].node), outputFile);
-            // inorder($2);
+            inorder((yyvsp[-2].node));
             // evaluate($2);
             exit(0); 
         }
