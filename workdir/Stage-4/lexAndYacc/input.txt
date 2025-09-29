@@ -1,6 +1,6 @@
 decl
-  int num, sum;
   str mesg,mesg1;
+  int arr[10], num, sum;
 enddecl
 
 begin

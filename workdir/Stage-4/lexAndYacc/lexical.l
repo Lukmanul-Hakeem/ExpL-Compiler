@@ -54,6 +54,8 @@
 ")"         { return RPAREN; }
 "{"         { return LBRACE; }
 "}"         { return RBRACE; }
+"["         { return LSQUARE; }
+"]"         { return RSQUARE; }
 
 [a-zA-Z][A-Za-z0-9]*   { yylval.node = create_node(-1, NULL, DATA_TYPE_VOID, NODE_TYPE_ID, yytext, NULL, NULL, NULL); return ID; } 
 

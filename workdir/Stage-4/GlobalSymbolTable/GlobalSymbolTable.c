@@ -15,11 +15,14 @@ Stnode *Lookup(char * name){
 }
 
 Stnode* create_symbol_table_node(char* name, int type, int size){
+    
     Stnode* newNode = (Stnode*)malloc(sizeof(Stnode));
     newNode->name = strdup(name);
     newNode->type = type;
     newNode->size = size;
-    newNode->binding = 4096 + bindAddr++;
+    newNode->binding = 4096 + bindAddr;
+    bindAddr += size;
+    newNode->next = NULL;
 
     return newNode;
 }

@@ -57,38 +57,40 @@ extern int yydebug;
     RPAREN = 263,
     LBRACE = 264,
     RBRACE = 265,
-    PUNCTUATION = 266,
-    COMMA = 267,
-    NEWLINE = 268,
-    IF = 269,
-    ELSE = 270,
-    THEN = 271,
-    ENDIF = 272,
-    WHILE = 273,
-    DO = 274,
-    REPEAT = 275,
-    UNTIL = 276,
-    BREAK = 277,
-    CONTINUE = 278,
-    PLUS = 279,
-    MINUS = 280,
-    MULT = 281,
-    DIV = 282,
-    EQUAL = 283,
-    LT = 284,
-    GT = 285,
-    LE = 286,
-    GE = 287,
-    NOT = 288,
-    NE = 289,
-    EQ = 290,
-    NUM = 291,
-    ID = 292,
-    STRING_LITERAL = 293,
-    DECL = 294,
-    ENDDECL = 295,
-    INT = 296,
-    STR = 297
+    LSQUARE = 266,
+    RSQUARE = 267,
+    PUNCTUATION = 268,
+    COMMA = 269,
+    NEWLINE = 270,
+    IF = 271,
+    ELSE = 272,
+    THEN = 273,
+    ENDIF = 274,
+    WHILE = 275,
+    DO = 276,
+    REPEAT = 277,
+    UNTIL = 278,
+    BREAK = 279,
+    CONTINUE = 280,
+    PLUS = 281,
+    MINUS = 282,
+    MULT = 283,
+    DIV = 284,
+    EQUAL = 285,
+    LT = 286,
+    GT = 287,
+    LE = 288,
+    GE = 289,
+    NOT = 290,
+    NE = 291,
+    EQ = 292,
+    NUM = 293,
+    ID = 294,
+    STRING_LITERAL = 295,
+    DECL = 296,
+    ENDDECL = 297,
+    INT = 298,
+    STR = 299
   };
 #endif
 /* Tokens.  */
@@ -100,38 +102,40 @@ extern int yydebug;
 #define RPAREN 263
 #define LBRACE 264
 #define RBRACE 265
-#define PUNCTUATION 266
-#define COMMA 267
-#define NEWLINE 268
-#define IF 269
-#define ELSE 270
-#define THEN 271
-#define ENDIF 272
-#define WHILE 273
-#define DO 274
-#define REPEAT 275
-#define UNTIL 276
-#define BREAK 277
-#define CONTINUE 278
-#define PLUS 279
-#define MINUS 280
-#define MULT 281
-#define DIV 282
-#define EQUAL 283
-#define LT 284
-#define GT 285
-#define LE 286
-#define GE 287
-#define NOT 288
-#define NE 289
-#define EQ 290
-#define NUM 291
-#define ID 292
-#define STRING_LITERAL 293
-#define DECL 294
-#define ENDDECL 295
-#define INT 296
-#define STR 297
+#define LSQUARE 266
+#define RSQUARE 267
+#define PUNCTUATION 268
+#define COMMA 269
+#define NEWLINE 270
+#define IF 271
+#define ELSE 272
+#define THEN 273
+#define ENDIF 274
+#define WHILE 275
+#define DO 276
+#define REPEAT 277
+#define UNTIL 278
+#define BREAK 279
+#define CONTINUE 280
+#define PLUS 281
+#define MINUS 282
+#define MULT 283
+#define DIV 284
+#define EQUAL 285
+#define LT 286
+#define GT 287
+#define LE 288
+#define GE 289
+#define NOT 290
+#define NE 291
+#define EQ 292
+#define NUM 293
+#define ID 294
+#define STRING_LITERAL 295
+#define DECL 296
+#define ENDDECL 297
+#define INT 298
+#define STR 299
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
@@ -141,7 +145,7 @@ union YYSTYPE
 
     tnode* node;
 
-#line 145 "y.tab.h"
+#line 149 "y.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

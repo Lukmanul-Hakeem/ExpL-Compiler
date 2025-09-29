@@ -21,7 +21,7 @@
 
 %token PBEGIN END
 %token READ WRITE
-%token LPAREN RPAREN LBRACE RBRACE
+%token LPAREN RPAREN LBRACE RBRACE LSQUARE RSQUARE
 %token PUNCTUATION COMMA NEWLINE
 %token IF ELSE THEN ENDIF 
 %token WHILE DO REPEAT UNTIL BREAK CONTINUE
@@ -85,6 +85,24 @@ VarList
                 exit(1);
             }
             Install($1->varname, Type, 1);
+        }
+    | VarList COMMA ID LSQUARE NUM RSQUARE
+        {
+            Stnode* temp = Lookup($3->varname);
+            if(temp){
+                yyerror("VARIABLE ALREADY EXISTS\n");
+                exit(1);
+            }
+            Install($3->varname, Type, $5->val);
+        }
+    | ID LSQUARE NUM RSQUARE
+        {
+            Stnode* temp = Lookup($1->varname);
+            if(temp){
+                yyerror("VARIABLE ALREADY EXISTS\n");
+                exit(1);
+            }
+            Install($1->varname, Type, $3->val);
         }
     ;
 
