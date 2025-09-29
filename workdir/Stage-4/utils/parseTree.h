@@ -29,7 +29,8 @@ enum node_type {
     NODE_TYPE_REPEAT_UNTIL,
     NODE_TYPE_BREAK,
     NODE_TYPE_CONTINUE,
-    NODE_TYPE_STRING
+    NODE_TYPE_STRING,
+    NODE_TYPE_ARR_ASSIGN
 };
 
 enum node_data_type {

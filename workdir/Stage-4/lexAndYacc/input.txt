@@ -1,9 +1,7 @@
 decl
-  str mesg,mesg1;
-  int arr[10], num, sum;
+  int a[10];
 enddecl
 
 begin
-    read(num);
-    write(num);
+    a[5] = 20;
 end;

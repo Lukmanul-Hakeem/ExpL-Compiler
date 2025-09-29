@@ -186,6 +186,33 @@ AsgStmt
                 yyerror("nodeType MisMatch - ASSIGN!\n");
             }
         }
+    | ID LSQUARE E RSQUARE EQUAL E PUNCTUATION
+        {
+            Stnode* temp = Lookup($1->varname);
+            if(temp == NULL){
+                yyerror("VARIABLE IS NOT DECLARED\n");
+            }
+
+            $1->entry = temp;
+            $1->type = temp->type; 
+
+            if(temp->size == 1){
+                yyerror("NOT AN ARRAY\n");
+            }
+
+            if($3->type != DATA_TYPE_INTEGER){
+                yyerror("Array Index must be Integer\n");
+            }
+
+            if( ($1->type == DATA_TYPE_INTEGER && $6->type == DATA_TYPE_INTEGER) || ($1->type == DATA_TYPE_STRING && $6->type == DATA_TYPE_STRING) ) {
+                tnode* connectorNode = create_node(-1, NULL, DATA_TYPE_VOID, NODE_TYPE_CONNECTOR, NULL, NULL, $1, $3);
+                $$ = create_node(-1, NULL, DATA_TYPE_VOID, NODE_TYPE_ARR_ASSIGN, NULL, NULL, connectorNode, $6);
+            }
+            else {
+                printf("%s %s\n",getNodeSymbol($1->type), getNodeSymbol($6->type));
+                yyerror("nodeType MisMatch - ARRAY ASSIGN!\n");
+            }
+        }
 
     ;
 

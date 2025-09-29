@@ -307,6 +307,47 @@ void generate_repeat_until_code(tnode* root, FILE* fptr){
     freeReg(reg);
 }
 
+int getArrayLastAddress(Stnode* node){
+    int startAddress = node->binding;
+    int size = node->size;
+    return startAddress + size;
+}
+
+void generate_code_array_assign(tnode* root, FILE* fptr){
+    // ->left->right :- expresion [index].
+    // ->left->left :- id from this we will get the start address and maximum allowed address
+
+    int regIndex = generate_arithmetic_code(root->left->right, fptr);
+
+    int FirstAddr = getAddress(root->left->left->entry); 
+    int LastAddr = getArrayLastAddress(root->left->left->entry);
+
+    int regFristAddr = getReg();
+    int regLastAddr = getReg();
+
+    fprintf(fptr, "MOV R%d, %d\n", regFristAddr, FirstAddr);
+    fprintf(fptr, "MOV R%d, %d\n", regLastAddr, LastAddr);
+    fprintf(fptr, "ADD R%d, R%d\n", regIndex, regFristAddr); // regIndex store the current address to which the value should be assigned.
+
+    int temp = conditionLabel++;
+
+    fprintf(fptr, "LE R%d, R%d\n",regLastAddr, regIndex);
+    fprintf(fptr, "JZ R%d, END%d\n", regLastAddr,temp);
+
+    fprintf(fptr, "MOV R%d, \"ARRAY OUT OFF BOUND\"", regLastAddr);
+    printContent(regLastAddr, fptr);
+    exitProgram(fptr);
+    fprintf(fptr, "END%d:\n", temp);
+
+    int regVal = generate_arithmetic_code(root->right, fptr);
+    fprintf(fptr, "MOV [R%d], R%d\n",regIndex, regVal);
+
+    freeReg(regIndex);
+    freeReg(regFristAddr);
+    freeReg(regLastAddr);
+
+}
+
 void code_Generation(tnode* root, FILE* fptr,int temp){
     if(root == NULL)return;
     // printf("%d ", root->nodetype);
@@ -334,6 +375,8 @@ void code_Generation(tnode* root, FILE* fptr,int temp){
         fprintf( fptr, "JMP END%d\n", temp);
     }else if( root-> nodetype == NODE_TYPE_CONTINUE){
         fprintf( fptr, "JMP LOOP%d\n", temp);
+    }else if( root->nodetype == NODE_TYPE_ARR_ASSIGN){
+        generate_code_array_assign(root, fptr);
     }
 
     return ;
