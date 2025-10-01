@@ -30,7 +30,9 @@ enum node_type {
     NODE_TYPE_BREAK,
     NODE_TYPE_CONTINUE,
     NODE_TYPE_STRING,
-    NODE_TYPE_ARR_ASSIGN
+    NODE_TYPE_ARR_ASSIGN,
+    NODE_TYPE_ARR_READ,
+    NODE_TYPE_ARRAY
 };
 
 enum node_data_type {
@@ -46,8 +48,8 @@ typedef struct tnode {
     int val;  
     char* sval;
     int type;            
-    int nodetype;         // type of node (read/write/connector/operator/etc.)
-    char *varname;        // name of a variable for ID nodes
+    int nodetype;         
+    char *varname;       
     Stnode* entry;
     struct tnode *left;   
     struct tnode *right;  

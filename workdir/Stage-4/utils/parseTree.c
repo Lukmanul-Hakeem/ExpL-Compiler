@@ -69,6 +69,22 @@ const char *getNodeSymbol(int nodetype)
         return "DO_WHILE";
     case NODE_TYPE_REPEAT_UNTIL:
         return "REPEAT_UNTIL";
+    case NODE_TYPE_BREAK:
+        return "BREAK";
+    case NODE_TYPE_CONTINUE:
+        return "CONTINUE";
+    case NODE_TYPE_VALUE:
+        return "VALUE";
+    case NODE_TYPE_ID:
+        return "ID";
+    case NODE_TYPE_STRING:
+        return "STRING";
+    case NODE_TYPE_ARR_ASSIGN:
+        return "ARRAY_ASSIGN";
+    case NODE_TYPE_ARR_READ:
+        return "ARRAY_READ";
+    case NODE_TYPE_ARRAY:
+        return "ARRAY";
     default:
         return "?";
     }

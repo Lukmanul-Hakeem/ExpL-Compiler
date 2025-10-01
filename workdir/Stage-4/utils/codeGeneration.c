@@ -25,10 +25,10 @@ void freeReg(int regIndex)
 void generateHeader(FILE *fptr)
 {
     fprintf(fptr, "0\n2056\n0\n0\n0\n0\n0\n0\n");
-    fprintf(fptr, "MOV SP, 4122\n");
+    fprintf(fptr, "MOV SP, 4222\n");
 }
 
-int getAddress(Stnode* entry)
+int getAddress(Stnode *entry)
 {
     return entry->binding;
 }
@@ -41,7 +41,7 @@ void generate_Code_ReadSys(int addrReg, FILE *fptr)
     fprintf(fptr, "PUSH R%d\n", reg);
     fprintf(fptr, "MOV R%d, -1\n", reg);
     fprintf(fptr, "PUSH R%d\n", reg);
-    fprintf(fptr, "MOV R%d, %d\n", reg, addrReg);
+    fprintf(fptr, "MOV R%d, R%d\n", reg, addrReg);
     fprintf(fptr, "PUSH R%d\n", reg);
     fprintf(fptr, "PUSH R%d\n", reg);
     fprintf(fptr, "PUSH R%d\n", reg);
@@ -60,8 +60,11 @@ void generate_Code_ReadSys(int addrReg, FILE *fptr)
 
 void readSystemCall(tnode *node, FILE *fptr)
 {
-    int addrReg = getAddress(node->left->entry);
+    int addr = getAddress(node->left->entry);
+    int addrReg = getReg();
+    fprintf(fptr, "MOV R%d, %d\n", addrReg, addr);
     generate_Code_ReadSys(addrReg, fptr);
+    freeReg(addrReg);
 }
 
 void printContent(int dataReg, FILE *fptr)
@@ -91,18 +94,24 @@ void printContent(int dataReg, FILE *fptr)
 void writeSystemCall(tnode *node, FILE *fptr)
 {
     int dataReg = -1;
-    if(node->left->type == DATA_TYPE_INTEGER) dataReg = generate_arithmetic_code(node->left, fptr);
-    else dataReg = generate_string_code(node->left, fptr);
+    if (node->left->type == DATA_TYPE_INTEGER)
+        dataReg = generate_arithmetic_code(node->left, fptr);
+    else
+        dataReg = generate_string_code(node->left, fptr);
     printContent(dataReg, fptr);
     freeReg(dataReg);
 }
 
-int generate_string_code(tnode* node, FILE* fptr){
+int generate_string_code(tnode *node, FILE *fptr)
+{
     int reg = getReg();
-    if(node->nodetype == NODE_TYPE_ID){
+    if (node->nodetype == NODE_TYPE_ID)
+    {
         int addr = getAddress(node->entry);
         fprintf(fptr, "MOV R%d, [%d]\n", reg, addr);
-    }else {
+    }
+    else
+    {
         fprintf(fptr, "MOV R%d, \"%s\"\n", reg, node->sval);
     }
     return reg;
@@ -123,6 +132,18 @@ int generate_arithmetic_code(tnode *root, FILE *fptr)
         int addr = getAddress(root->entry);
         int reg = getReg();
         fprintf(fptr, "MOV R%d, [%d]\n", reg, addr);
+        return reg;
+    }
+
+    if (root->nodetype == NODE_TYPE_ARRAY)
+    {
+
+        int indexReg = generate_code_array_index(root, fptr);
+
+        int reg = getReg();
+        fprintf(fptr, "MOV R%d, [R%d]\n", reg, indexReg);
+
+        freeReg(indexReg);
         return reg;
     }
 
@@ -158,63 +179,91 @@ void generate_assignment_code(tnode *node, FILE *fptr)
 
     int rightReg = -1;
 
-    if(node->right->type == DATA_TYPE_INTEGER) rightReg = generate_arithmetic_code(node->right, fptr);
-    else rightReg = generate_string_code(node->right, fptr);
+    if (node->right->type == DATA_TYPE_INTEGER)
+        rightReg = generate_arithmetic_code(node->right, fptr);
+    else
+        rightReg = generate_string_code(node->right, fptr);
 
     int addr = getAddress(node->left->entry);
     fprintf(fptr, "MOV [%d], R%d\n", addr, rightReg);
     freeReg(rightReg);
-
 }
 
 void exitProgram(FILE *fptr)
 {
     int reg = getReg();
-    fprintf(fptr, "MOV R%d, 10\n", reg); 
-    fprintf(fptr, "PUSH R%d\n", reg);        
-    fprintf(fptr, "PUSH R%d\n", reg);        
-    fprintf(fptr, "PUSH R%d\n", reg);        
-    fprintf(fptr, "PUSH R%d\n", reg);        
-    fprintf(fptr, "PUSH R%d\n", reg);       
-    fprintf(fptr, "INT 10\n");            
+    fprintf(fptr, "MOV R%d, 10\n", reg);
+    fprintf(fptr, "PUSH R%d\n", reg);
+    fprintf(fptr, "PUSH R%d\n", reg);
+    fprintf(fptr, "PUSH R%d\n", reg);
+    fprintf(fptr, "PUSH R%d\n", reg);
+    fprintf(fptr, "PUSH R%d\n", reg);
+    fprintf(fptr, "INT 10\n");
 
     int returnReg = getReg();
     fprintf(fptr, "POP R%d\n", returnReg);
-    fprintf(fptr, "POP R%d\n", reg);       
-    fprintf(fptr, "POP R%d\n", reg);       
-    fprintf(fptr, "POP R%d\n", reg);       
-    fprintf(fptr, "POP R%d\n", reg);     
+    fprintf(fptr, "POP R%d\n", reg);
+    fprintf(fptr, "POP R%d\n", reg);
+    fprintf(fptr, "POP R%d\n", reg);
+    fprintf(fptr, "POP R%d\n", reg);
 
     freeReg(reg);
     freeReg(returnReg);
 }
 
-int generate_boolean_code(tnode* root, FILE* fptr){
+int generate_boolean_code(tnode *root, FILE *fptr)
+{
 
-    if(root->nodetype == NODE_TYPE_ID){
+    if (root->nodetype == NODE_TYPE_ID)
+    {
         int reg = getReg();
         int addr = getAddress(root->entry);
         fprintf(fptr, "MOV R%d, [%d]\n", reg, addr);
         return reg;
-    }else if(root->nodetype == NODE_TYPE_VALUE){
+    }
+    else if (root->nodetype == NODE_TYPE_VALUE)
+    {
         int reg = getReg();
         fprintf(fptr, "MOV R%d, %d\n", reg, root->val);
         return reg;
-    }else{
+    }
+    else if (root->nodetype == NODE_TYPE_ARRAY)
+    {
+        int indexReg = generate_code_array_index(root, fptr);
+
+        int reg = getReg();
+        fprintf(fptr, "MOV R%d, [R%d]\n", reg, indexReg);
+
+        freeReg(indexReg);
+        return reg;
+    }
+    else
+    {
         int left = generate_boolean_code(root->left, fptr);
         int right = generate_boolean_code(root->right, fptr);
 
-        if(root->nodetype == NODE_TYPE_LT){
+        if (root->nodetype == NODE_TYPE_LT)
+        {
             fprintf(fptr, "LT R%d, R%d\n", left, right);
-        }else if(root->nodetype == NODE_TYPE_LE){
+        }
+        else if (root->nodetype == NODE_TYPE_LE)
+        {
             fprintf(fptr, "LE R%d, R%d\n", left, right);
-        }else if(root->nodetype == NODE_TYPE_GT){
+        }
+        else if (root->nodetype == NODE_TYPE_GT)
+        {
             fprintf(fptr, "GT R%d, R%d\n", left, right);
-        }else if(root->nodetype == NODE_TYPE_GE){
+        }
+        else if (root->nodetype == NODE_TYPE_GE)
+        {
             fprintf(fptr, "GE R%d, R%d\n", left, right);
-        }else if(root->nodetype == NODE_TYPE_EQ){
+        }
+        else if (root->nodetype == NODE_TYPE_EQ)
+        {
             fprintf(fptr, "EQ R%d, R%d\n", left, right);
-        }else if(root->nodetype == NODE_TYPE_NE){
+        }
+        else if (root->nodetype == NODE_TYPE_NE)
+        {
             fprintf(fptr, "NE R%d, R%d\n", left, right);
         }
 
@@ -224,7 +273,8 @@ int generate_boolean_code(tnode* root, FILE* fptr){
     }
 }
 
-void generate_if_else_code(tnode* root, FILE* fptr, int loopLabel){
+void generate_if_else_code(tnode *root, FILE *fptr, int loopLabel)
+{
 
     int reg = generate_boolean_code(root->left, fptr);
     int temp = conditionLabel++;
@@ -240,13 +290,12 @@ void generate_if_else_code(tnode* root, FILE* fptr, int loopLabel){
     code_Generation(root->right->right, fptr, loopLabel);
 
     fprintf(fptr, "END_IF_ELSE%d:\n", temp);
-    
 
     freeReg(reg);
-
 }
 
-void generate_if_code(tnode* root, FILE* fptr, int loopLabel){
+void generate_if_code(tnode *root, FILE *fptr, int loopLabel)
+{
 
     int reg = generate_boolean_code(root->left, fptr);
     int temp = conditionLabel++;
@@ -261,24 +310,25 @@ void generate_if_code(tnode* root, FILE* fptr, int loopLabel){
 
     fprintf(fptr, "END_IF%d:\n", temp);
 
-
     freeReg(reg);
 }
 
-void generate_while_code(tnode* root, FILE* fptr){
+void generate_while_code(tnode *root, FILE *fptr)
+{
 
     int temp = label++;
     fprintf(fptr, "LOOP%d:\n", temp);
     int reg = generate_boolean_code(root->left, fptr);
     fprintf(fptr, "JZ R%d, END%d\n", reg, temp);
-    code_Generation(root->right,fptr, temp);
+    code_Generation(root->right, fptr, temp);
     fprintf(fptr, "JMP LOOP%d\n", temp);
     fprintf(fptr, "END%d:\n", temp);
 
     freeReg(reg);
 }
 
-void generate_do_while_code(tnode* root, FILE* fptr){
+void generate_do_while_code(tnode *root, FILE *fptr)
+{
 
     int temp = label++;
 
@@ -290,10 +340,10 @@ void generate_do_while_code(tnode* root, FILE* fptr){
     fprintf(fptr, "END%d:\n", temp);
 
     freeReg(reg);
-
 }
 
-void generate_repeat_until_code(tnode* root, FILE* fptr){
+void generate_repeat_until_code(tnode *root, FILE *fptr)
+{
 
     int temp = label++;
 
@@ -307,77 +357,123 @@ void generate_repeat_until_code(tnode* root, FILE* fptr){
     freeReg(reg);
 }
 
-int getArrayLastAddress(Stnode* node){
+int getArrayLastAddress(Stnode *node)
+{
     int startAddress = node->binding;
     int size = node->size;
     return startAddress + size;
 }
 
-void generate_code_array_assign(tnode* root, FILE* fptr){
-    // ->left->right :- expresion [index].
-    // ->left->left :- id from this we will get the start address and maximum allowed address
+void check_array_bound(int indexReg, tnode *root, FILE *fptr)
+{
+    int FirstAddr = getAddress(root->entry);
+    int LastAddr = getArrayLastAddress(root->entry);
 
-    int regIndex = generate_arithmetic_code(root->left->right, fptr);
+    int firstAddrReg = getReg();
+    int lastAddrReg = getReg();
 
-    int FirstAddr = getAddress(root->left->left->entry); 
-    int LastAddr = getArrayLastAddress(root->left->left->entry);
-
-    int regFristAddr = getReg();
-    int regLastAddr = getReg();
-
-    fprintf(fptr, "MOV R%d, %d\n", regFristAddr, FirstAddr);
-    fprintf(fptr, "MOV R%d, %d\n", regLastAddr, LastAddr);
-    fprintf(fptr, "ADD R%d, R%d\n", regIndex, regFristAddr); // regIndex store the current address to which the value should be assigned.
+    fprintf(fptr, "MOV R%d, %d\n", firstAddrReg, FirstAddr);
+    fprintf(fptr, "MOV R%d, %d\n", lastAddrReg, LastAddr);
+    fprintf(fptr, "ADD R%d, R%d\n", indexReg, firstAddrReg);
 
     int temp = conditionLabel++;
 
-    fprintf(fptr, "LE R%d, R%d\n",regLastAddr, regIndex);
-    fprintf(fptr, "JZ R%d, END%d\n", regLastAddr,temp);
+    fprintf(fptr, "LE R%d, R%d\n", lastAddrReg, indexReg);
+    fprintf(fptr, "JZ R%d, ARRAY_BOUND%d\n", lastAddrReg, temp);
 
-    fprintf(fptr, "MOV R%d, \"ARRAY OUT OFF BOUND\"", regLastAddr);
-    printContent(regLastAddr, fptr);
+    fprintf(fptr, "MOV R%d, \"ARRAY OUT OFF BOUND\"\n", lastAddrReg);
+    printContent(lastAddrReg, fptr);
     exitProgram(fptr);
-    fprintf(fptr, "END%d:\n", temp);
+    fprintf(fptr, "ARRAY_BOUND%d:\n", temp);
 
-    int regVal = generate_arithmetic_code(root->right, fptr);
-    fprintf(fptr, "MOV [R%d], R%d\n",regIndex, regVal);
-
-    freeReg(regIndex);
-    freeReg(regFristAddr);
-    freeReg(regLastAddr);
-
+    freeReg(firstAddrReg);
+    freeReg(lastAddrReg);
 }
 
-void code_Generation(tnode* root, FILE* fptr,int temp){
-    if(root == NULL)return;
-    // printf("%d ", root->nodetype);
+int generate_code_array_index(tnode *root, FILE *fptr)
+{
+    int regIndex = generate_arithmetic_code(root->right, fptr);
+    check_array_bound(regIndex, root->left, fptr);
+    return regIndex;
+}
 
-    if(root->nodetype == NODE_TYPE_CONNECTOR){
+void generate_code_array_assign(tnode *root, FILE *fptr)
+{
+    int regIndex = generate_code_array_index(root->left, fptr);
+
+    int regVal = generate_arithmetic_code(root->right, fptr);
+    fprintf(fptr, "MOV [R%d], R%d\n", regIndex, regVal);
+
+    freeReg(regIndex);
+    freeReg(regVal);
+}
+
+void generate_code_array_read(tnode *root, FILE *fptr)
+{
+    int indexReg = generate_code_array_index(root, fptr);
+    generate_Code_ReadSys(indexReg, fptr);
+    freeReg(indexReg);
+}
+
+
+void code_Generation(tnode *root, FILE *fptr, int temp)
+{
+    if (root == NULL)
+        return;
+
+    if (root->nodetype == NODE_TYPE_CONNECTOR)
+    {
         code_Generation(root->left, fptr, temp);
         code_Generation(root->right, fptr, temp);
-    }else if(root->nodetype == NODE_TYPE_READ){
+    }
+    else if (root->nodetype == NODE_TYPE_READ)
+    {
         readSystemCall(root, fptr);
-    }else if(root->nodetype == NODE_TYPE_WRITE){
+    }
+    else if (root->nodetype == NODE_TYPE_WRITE)
+    {
         writeSystemCall(root, fptr);
-    }else if(root->nodetype == NODE_TYPE_ASSIGN){
+    }
+    else if (root->nodetype == NODE_TYPE_ASSIGN)
+    {
         generate_assignment_code(root, fptr);
-    }else if(root->nodetype == NODE_TYPE_IF_ELSE){
+    }
+    else if (root->nodetype == NODE_TYPE_IF_ELSE)
+    {
         generate_if_else_code(root, fptr, temp);
-    }else if(root->nodetype == NODE_TYPE_IF){
+    }
+    else if (root->nodetype == NODE_TYPE_IF)
+    {
         generate_if_code(root, fptr, temp);
-    }else if(root->nodetype == NODE_TYPE_WHILE){
+    }
+    else if (root->nodetype == NODE_TYPE_WHILE)
+    {
         generate_while_code(root, fptr);
-    }else if(root->nodetype == NODE_TYPE_DO_WHILE){
+    }
+    else if (root->nodetype == NODE_TYPE_DO_WHILE)
+    {
         generate_do_while_code(root, fptr);
-    }else if(root->nodetype == NODE_TYPE_REPEAT_UNTIL){
+    }
+    else if (root->nodetype == NODE_TYPE_REPEAT_UNTIL)
+    {
         generate_repeat_until_code(root, fptr);
-    }else if(root->nodetype == NODE_TYPE_BREAK){
-        fprintf( fptr, "JMP END%d\n", temp);
-    }else if( root-> nodetype == NODE_TYPE_CONTINUE){
-        fprintf( fptr, "JMP LOOP%d\n", temp);
-    }else if( root->nodetype == NODE_TYPE_ARR_ASSIGN){
+    }
+    else if (root->nodetype == NODE_TYPE_BREAK)
+    {
+        fprintf(fptr, "JMP END%d\n", temp);
+    }
+    else if (root->nodetype == NODE_TYPE_CONTINUE)
+    {
+        fprintf(fptr, "JMP LOOP%d\n", temp);
+    }
+    else if (root->nodetype == NODE_TYPE_ARR_ASSIGN)
+    {
         generate_code_array_assign(root, fptr);
     }
+    else if (root->nodetype == NODE_TYPE_ARR_READ)
+    {
+        generate_code_array_read(root, fptr);
+    }
 
-    return ;
+    return;
 }

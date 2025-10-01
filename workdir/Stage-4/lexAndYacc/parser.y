@@ -109,7 +109,7 @@ VarList
 Program
     : PBEGIN Slist END PUNCTUATION
         {
-            inorder($2);
+            // inorder($2);
             makeExecutableFile( $2, outputFile);
             // evaluate($2);
         }
@@ -157,6 +157,27 @@ InputStmt
 
             $$ = create_node(-1, NULL, DATA_TYPE_VOID, NODE_TYPE_READ, NULL, NULL, $3, NULL);
         }
+
+    | READ LPAREN ID LSQUARE E RSQUARE RPAREN PUNCTUATION
+        {
+            Stnode* temp = Lookup($3->varname);
+            if(temp == NULL){
+                yyerror("VARIABLE IS NOT DECLARED\n");
+            }
+
+            $3->entry = temp;
+            $3->type = temp->type; 
+
+            if(temp->size == 1){
+                yyerror("NOT AN ARRAY\n");
+            }
+
+            if($5->type != DATA_TYPE_INTEGER){
+                yyerror("Array Index must be Integer\n");
+            }
+
+            $$ = create_node(-1, NULL, DATA_TYPE_VOID, NODE_TYPE_ARR_READ, NULL, NULL, $3, $5);
+        }
     ;
 
 OutputStmt
@@ -177,8 +198,6 @@ AsgStmt
 
             $1->entry = temp;
             $1->type = temp->type; 
-
-            // printf("%s = \n",$1->varname);
 
             if( ($1->type == DATA_TYPE_INTEGER && $3->type == DATA_TYPE_INTEGER) || ($1->type == DATA_TYPE_STRING && $3->type == DATA_TYPE_STRING) ) $$ = create_node(-1, NULL, DATA_TYPE_VOID, NODE_TYPE_ASSIGN, NULL, NULL, $1, $3);
             else {
@@ -392,6 +411,18 @@ E
     | LPAREN E RPAREN
         { 
             $$ = $2; 
+        }
+    | ID LSQUARE E RSQUARE
+        {
+            Stnode* temp = Lookup($1->varname);
+            if(temp == NULL){
+                yyerror("VARIABLE IS NOT DECLARED\n");
+            }
+
+            $1->entry = temp;
+            $1->type = temp->type;
+
+            $$ = create_node(-1, NULL, temp->type, NODE_TYPE_ARRAY, NULL, NULL, $1, $3);
         }
     ;
 

@@ -19,6 +19,7 @@ void exitProgram(FILE *fptr);
 
 
 int  getAddress(Stnode* entry);
+int getArrayLastAddress(Stnode *node);
 
 
 void generate_Code_ReadSys(int addrReg, FILE *fptr);
@@ -37,5 +38,9 @@ void code_Generation(tnode* root, FILE* fptr, int temp);
 void generate_if_code(tnode* root, FILE* fptr, int loopLabel);
 void generate_if_else_code(tnode* root, FILE* fptr, int loopLabel);
 
+void check_array_bound(int indexReg, tnode *root, FILE *fptr);
+int generate_code_array_index(tnode *root, FILE *fptr);
+void generate_code_array_assign(tnode *root, FILE *fptr);
+void generate_code_array_read(tnode *root, FILE *fptr);
 
 #endif 
