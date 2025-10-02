@@ -17,6 +17,7 @@ enum node_type {
     NODE_TYPE_MINUS,
     NODE_TYPE_MULT,
     NODE_TYPE_DIV,
+    NODE_TYPE_MOD,
     NODE_TYPE_ASSIGN,
     NODE_TYPE_VALUE,
     NODE_TYPE_ID,

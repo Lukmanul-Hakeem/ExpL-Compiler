@@ -76,21 +76,22 @@ extern int yydebug;
     MINUS = 282,
     MULT = 283,
     DIV = 284,
-    EQUAL = 285,
-    LT = 286,
-    GT = 287,
-    LE = 288,
-    GE = 289,
-    NOT = 290,
-    NE = 291,
-    EQ = 292,
-    NUM = 293,
-    ID = 294,
-    STRING_LITERAL = 295,
-    DECL = 296,
-    ENDDECL = 297,
-    INT = 298,
-    STR = 299
+    MOD = 285,
+    EQUAL = 286,
+    LT = 287,
+    GT = 288,
+    LE = 289,
+    GE = 290,
+    NOT = 291,
+    NE = 292,
+    EQ = 293,
+    NUM = 294,
+    ID = 295,
+    STRING_LITERAL = 296,
+    DECL = 297,
+    ENDDECL = 298,
+    INT = 299,
+    STR = 300
   };
 #endif
 /* Tokens.  */
@@ -121,21 +122,22 @@ extern int yydebug;
 #define MINUS 282
 #define MULT 283
 #define DIV 284
-#define EQUAL 285
-#define LT 286
-#define GT 287
-#define LE 288
-#define GE 289
-#define NOT 290
-#define NE 291
-#define EQ 292
-#define NUM 293
-#define ID 294
-#define STRING_LITERAL 295
-#define DECL 296
-#define ENDDECL 297
-#define INT 298
-#define STR 299
+#define MOD 285
+#define EQUAL 286
+#define LT 287
+#define GT 288
+#define LE 289
+#define GE 290
+#define NOT 291
+#define NE 292
+#define EQ 293
+#define NUM 294
+#define ID 295
+#define STRING_LITERAL 296
+#define DECL 297
+#define ENDDECL 298
+#define INT 299
+#define STR 300
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
@@ -145,7 +147,7 @@ union YYSTYPE
 
     tnode* node;
 
-#line 149 "y.tab.h"
+#line 151 "y.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

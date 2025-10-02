@@ -1,0 +1,62 @@
+decl
+    int n,i,j,k;
+    int A[5][5], B[5][5], C[5][5];
+enddecl
+
+begin
+    read(n);
+
+    i=0;
+    while(i<n) {
+        j=0;
+        while(j<n) {
+            read(A[i][j]);
+            j = j+1;
+        }
+        i = i+1;
+    }
+
+    i=0;
+    while(i<n) {
+        j=0;
+        while(j<n) {
+            read(B[i][j]);
+            j = j+1;
+        }
+        i = i+1;
+    }
+
+    i=0;
+    while(i<n) {
+        j=0;
+        while(j<n) {
+            C[i][j] = 0;
+            j = j+1;
+        }
+        i = i+1;
+    }
+
+    i=0;
+    while(i<n) {
+        j=0;
+        while(j<n) {
+            k=0;
+            while(k<n) {
+                C[i][j] = C[i][j] + (A[i][k] * B[k][j]);
+                k = k+1;
+            }
+            j = j+1;
+        }
+        i = i+1;
+    }
+
+    i=0;
+    while(i<n) {
+        j=0;
+        while(j<n) {
+            write(C[i][j]);
+            j = j+1;
+        }
+        i = i+1;
+    }
+end;

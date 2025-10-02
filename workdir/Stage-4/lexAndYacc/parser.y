@@ -25,7 +25,7 @@
 %token PUNCTUATION COMMA NEWLINE
 %token IF ELSE THEN ENDIF 
 %token WHILE DO REPEAT UNTIL BREAK CONTINUE
-%token PLUS MINUS MULT DIV EQUAL LT GT LE GE NOT NE EQ
+%token PLUS MINUS MULT DIV MOD EQUAL LT GT LE GE NOT NE EQ
 %token <node> NUM ID STRING_LITERAL
 %token DECL ENDDECL
 %token INT STR
@@ -34,7 +34,7 @@
 
 %right EQUAL
 %left LT GT LE GE EQ NE
-%left PLUS MINUS
+%left PLUS MINUS MOD
 %left MULT DIV
 
 
@@ -242,6 +242,10 @@ E
     | E DIV E
         { 
             $$ = create_arithmetic_node($1, $3, NODE_TYPE_DIV);
+        }
+    | E MOD E
+        {
+            $$ = create_arithmetic_node($1, $3, NODE_TYPE_MOD);
         }
 
     | E LT E

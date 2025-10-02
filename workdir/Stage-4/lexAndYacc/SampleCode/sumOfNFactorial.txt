@@ -1,0 +1,23 @@
+decl
+    int n,i,j,sum,k;
+enddecl
+begin
+	read(n);
+	sum=0;
+	k=1;
+	while(k <= n){
+		if(n <= 1) then
+			sum=sum+1;
+		else
+			i=1;
+			j=1;
+			while(i <= k){
+				j=j*i;
+				i=i+1;
+			}
+			sum=sum+j;
+		endif;
+		k=k+1;
+	}
+	write(sum);
+end;

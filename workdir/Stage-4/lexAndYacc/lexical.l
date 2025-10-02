@@ -37,6 +37,7 @@
 "-"         { return MINUS; }
 "*"         { return MULT; }
 "/"         { return DIV; }
+"%"         { return MOD; }
 
 "="         { return EQUAL; }
 "=="        { return EQ; }

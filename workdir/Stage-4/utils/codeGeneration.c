@@ -186,6 +186,9 @@ int generate_arithmetic_code(tnode *root, FILE *fptr)
     case NODE_TYPE_DIV:
         fprintf(fptr, "DIV R%d, R%d\n", leftReg, rightReg);
         break;
+    case NODE_TYPE_MOD:
+        fprintf(fptr, "MOD R%d, R%d\n", leftReg, rightReg);
+        break;
     default:
         printf("unknown Operator.\n");
         exit(1);
