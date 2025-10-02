@@ -1,9 +1,11 @@
 #ifndef PARSETREE_H
 #define PARSETREE_H
 
-#include "./../GlobalSymbolTable/GlobalSymbolTable.h"
 #include <stdlib.h>
 #include <string.h>
+
+/* Forward declare symbol table node type to avoid circular include */
+typedef struct Stnode Stnode;
 
 enum node_type {
     NODE_TYPE_WRITE,
@@ -32,14 +34,15 @@ enum node_type {
     NODE_TYPE_STRING,
     NODE_TYPE_ARR_ASSIGN,
     NODE_TYPE_ARR_READ,
-    NODE_TYPE_ARRAY
+    NODE_TYPE_ARRAY = 1000
 };
 
 enum node_data_type {
     DATA_TYPE_INTEGER,
     DATA_TYPE_BOOLEAN,
     DATA_TYPE_VOID,
-    DATA_TYPE_STRING
+    DATA_TYPE_STRING,
+    DATA_TYPE_ARRAY
 };
 
 int var[26];
@@ -47,15 +50,29 @@ int var[26];
 typedef struct tnode { 
     int val;  
     char* sval;
-    int type;            
-    int nodetype;         
-    char *varname;       
-    Stnode* entry;
+    int type;            /* DATA_TYPE_* */
+    int nodetype;        /* NODE_TYPE_* */
+    char *varname;
+    Stnode* entry;       /* pointer to symbol-table node (forward-declared) */
     struct tnode *left;   
     struct tnode *right;  
 } tnode;
 
-tnode* create_node(int val, char* sval, int type, int nodeType, char* c, Stnode* entry, tnode *left, struct tnode *right);
+/* function prototypes - use tnode and Stnode forward decls where needed */
+tnode* create_node(int val, char* sval, int type, int nodeType, char* c, Stnode* entry, tnode *left, tnode *right);
+tnode* create_array_node(tnode* id, tnode* index);
+tnode* create_id_node(tnode* id);
+tnode* create_write_node(tnode* expr);
+tnode* create_read_node(tnode* id);
+tnode* create_assign_node(tnode* left, tnode* right);
+tnode* create_if_node(tnode* condition, tnode* thenBranch);
+tnode* create_if_else_node(tnode* condition, tnode* thenBranch, tnode* elseBranch);
+tnode* create_while_node(tnode* condition, tnode* body);
+tnode* create_do_while_node(tnode* body, tnode* condition);
+tnode* create_repeat_until_node(tnode* body, tnode* condition);
+tnode* create_arithmetic_node(tnode* left, tnode* right, int operator);
+tnode* create_boolean_node(tnode* left, tnode* right, int operator);
+
 const char* getNodeSymbol(int nodetype);
 void inorder(tnode* root);
 int evaluateArithmaticExpr(tnode* root);
@@ -63,4 +80,4 @@ int evaluateBooleanExpr(tnode* root);
 void evaluate(tnode* root);
 void freeTree(tnode* root);
 
-#endif
+#endif /* PARSETREE_H */

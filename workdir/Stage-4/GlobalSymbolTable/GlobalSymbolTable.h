@@ -2,19 +2,23 @@
 #define GLOBALSYMBOLTABLE_H
 
 #include <string.h>
-#include<stdio.h>
+#include <stdio.h>
 
-typedef struct Gsymbol {
+typedef struct tnode tnode; 
+
+typedef struct Stnode {
     char* name;
     int type;
     int size;
+    int innerSize;
     int binding;
-    struct Gsymbol *next;
-}Stnode;
+    struct Stnode *next;
+} Stnode;
 
-Stnode* create_symbol_table_node(char* name, int type, int size);
-struct Gsymbol *Lookup(char * name);
-void Install(char *name, int type, int size);
+void create_symbol_table_entry(tnode* id, int Type, int size, int innerSize);
+Stnode* create_symbol_table_node(char* name, int type, int size, int innerSize);
+Stnode* Lookup(char *name);
+void Install(char *name, int type, int size, int innerSize);
 void print_symbol_table();
 
 #endif

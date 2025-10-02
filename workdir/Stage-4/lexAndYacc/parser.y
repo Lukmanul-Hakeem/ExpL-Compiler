@@ -70,46 +70,34 @@ Type
 VarList
     : VarList COMMA ID
         {
-            Stnode* temp = Lookup($3->varname);
-            if(temp){
-                yyerror("VARIABLE ALREADY EXISTS\n");
-                exit(1);
-            }
-            Install($3->varname, Type, 1);
+            create_symbol_table_entry($3, Type, 1, 0);
         }
     | ID
         {
-            Stnode* temp = Lookup($1->varname);
-            if(temp){
-                yyerror("VARIABLE ALREADY EXISTS\n");
-                exit(1);
-            }
-            Install($1->varname, Type, 1);
+            create_symbol_table_entry($1, Type, 1, 0);
         }
     | VarList COMMA ID LSQUARE NUM RSQUARE
         {
-            Stnode* temp = Lookup($3->varname);
-            if(temp){
-                yyerror("VARIABLE ALREADY EXISTS\n");
-                exit(1);
-            }
-            Install($3->varname, Type, $5->val);
+            create_symbol_table_entry($3, Type, 1, $5->val);
         }
     | ID LSQUARE NUM RSQUARE
         {
-            Stnode* temp = Lookup($1->varname);
-            if(temp){
-                yyerror("VARIABLE ALREADY EXISTS\n");
-                exit(1);
-            }
-            Install($1->varname, Type, $3->val);
+            create_symbol_table_entry($1, Type, 1, $3->val);
+        }
+    | ID LSQUARE NUM RSQUARE LSQUARE NUM RSQUARE
+        {
+            create_symbol_table_entry($1, Type, $3->val, $6->val);
+        }
+    | VarList COMMA ID LSQUARE NUM RSQUARE LSQUARE NUM RSQUARE
+        {
+            create_symbol_table_entry($3, Type, $5->val, $8->val);
         }
     ;
 
 Program
     : PBEGIN Slist END PUNCTUATION
         {
-            // inorder($2);
+            inorder($2);
             makeExecutableFile( $2, outputFile);
             // evaluate($2);
         }
@@ -147,90 +135,34 @@ Stmt
 InputStmt
     : READ LPAREN ID RPAREN PUNCTUATION
         {
-            Stnode* temp = Lookup($3->varname);
-            if(temp == NULL){
-                yyerror("VARIABLE IS NOT DECLARED\n");
-            }
-
-            $3->entry = temp;
-            $3->type = temp->type;
-
-            $$ = create_node(-1, NULL, DATA_TYPE_VOID, NODE_TYPE_READ, NULL, NULL, $3, NULL);
+            $3 = create_id_node($3);
+            $$ = create_read_node($3);
         }
 
     | READ LPAREN ID LSQUARE E RSQUARE RPAREN PUNCTUATION
         {
-            Stnode* temp = Lookup($3->varname);
-            if(temp == NULL){
-                yyerror("VARIABLE IS NOT DECLARED\n");
-            }
-
-            $3->entry = temp;
-            $3->type = temp->type; 
-
-            if(temp->size == 1){
-                yyerror("NOT AN ARRAY\n");
-            }
-
-            if($5->type != DATA_TYPE_INTEGER){
-                yyerror("Array Index must be Integer\n");
-            }
-
-            $$ = create_node(-1, NULL, DATA_TYPE_VOID, NODE_TYPE_ARR_READ, NULL, NULL, $3, $5);
+            tnode* arrayNode = create_array_node($3, $5);
+            $$ = create_read_node(arrayNode);
         }
     ;
 
 OutputStmt
     : WRITE LPAREN E RPAREN PUNCTUATION
         {
-            if($3->type == DATA_TYPE_INTEGER || $3->type == DATA_TYPE_STRING) $$ = create_node(-1, NULL, DATA_TYPE_VOID, NODE_TYPE_WRITE, NULL, NULL, $3, NULL);
-            else yyerror("NODE TYPE MISMATCH IN WRITE\n");
+            $$ = create_write_node($3);
         }
     ;
 
 AsgStmt
     : ID EQUAL E PUNCTUATION
         {
-            Stnode* temp = Lookup($1->varname);
-            if(temp == NULL){
-                yyerror("VARIABLE IS NOT DECLARED\n");
-            }
-
-            $1->entry = temp;
-            $1->type = temp->type; 
-
-            if( ($1->type == DATA_TYPE_INTEGER && $3->type == DATA_TYPE_INTEGER) || ($1->type == DATA_TYPE_STRING && $3->type == DATA_TYPE_STRING) ) $$ = create_node(-1, NULL, DATA_TYPE_VOID, NODE_TYPE_ASSIGN, NULL, NULL, $1, $3);
-            else {
-                printf("%s %s\n",getNodeSymbol($1->type), getNodeSymbol($3->type));
-                yyerror("nodeType MisMatch - ASSIGN!\n");
-            }
+            $1 = create_id_node($1);
+            $$ = create_assign_node($1, $3);
         }
     | ID LSQUARE E RSQUARE EQUAL E PUNCTUATION
         {
-            Stnode* temp = Lookup($1->varname);
-            if(temp == NULL){
-                yyerror("VARIABLE IS NOT DECLARED\n");
-            }
-
-            $1->entry = temp;
-            $1->type = temp->type; 
-
-            if(temp->size == 1){
-                yyerror("NOT AN ARRAY\n");
-            }
-
-            if($3->type != DATA_TYPE_INTEGER){
-                yyerror("Array Index must be Integer\n");
-            }
-
-            if( ($1->type == DATA_TYPE_INTEGER && $6->type == DATA_TYPE_INTEGER) || ($1->type == DATA_TYPE_STRING && $6->type == DATA_TYPE_STRING) ) {
-                tnode* connectorNode = create_node(-1, NULL, DATA_TYPE_VOID, NODE_TYPE_CONNECTOR, NULL, NULL, $1, $3);
-                $$ = create_node(-1, NULL, DATA_TYPE_VOID, NODE_TYPE_ARR_ASSIGN, NULL, NULL, connectorNode, $6);
-            }
-            else {
-                printf("%s %s\n",getNodeSymbol($1->type), getNodeSymbol($6->type));
-                yyerror("nodeType MisMatch - ARRAY ASSIGN!\n");
-            }
+            tnode* arrayNode = create_array_node($1, $3);
+            $$ = create_assign_node(arrayNode, $6);
         }
 
     ;
@@ -239,52 +171,32 @@ AsgStmt
 IfStmt
     : IF LPAREN E RPAREN THEN Slist ELSE Slist ENDIF PUNCTUATION
         {
-            if($3->type != DATA_TYPE_BOOLEAN){
-                yyerror("Condition in IF must be boolean\n");
-            }
-
-            tnode* connectorNode = create_node(-1, NULL, DATA_TYPE_VOID, NODE_TYPE_CONNECTOR, NULL, NULL, $6, $8);
-            $$ = create_node(-1, NULL, DATA_TYPE_VOID, NODE_TYPE_IF_ELSE, NULL, NULL, $3, connectorNode);
+            $$ = create_if_else_node($3, $6, $8);
         }
     | IF LPAREN E RPAREN THEN Slist ENDIF PUNCTUATION
         {
-
-            if($3->type != DATA_TYPE_BOOLEAN){
-                yyerror("Condition in IF must be boolean\n");
-            }
-
-            $$ = create_node(-1, NULL, DATA_TYPE_VOID, NODE_TYPE_IF, NULL, NULL, $3, $6);
+            $$ = create_if_node($3, $6);
         }
     ;
 
 whileStmt 
     : WHILE LPAREN E RPAREN LBRACE Slist RBRACE
         {
-            if($3->type != DATA_TYPE_BOOLEAN){
-                yyerror("Condition must be boolean!\n");
-            }
-
-            $$ = create_node(-1, NULL, DATA_TYPE_VOID, NODE_TYPE_WHILE, NULL, NULL, $3, $6);
+            $$ = create_while_node($3, $6);
         }
     ;
 
 doWhileStmt
     : DO LBRACE Slist RBRACE WHILE LPAREN E RPAREN PUNCTUATION
         {
-            if($7->type != DATA_TYPE_BOOLEAN){
-                yyerror("Condition must be boolean!\n");
-            }
-            $$ = create_node(-1, NULL, DATA_TYPE_VOID, NODE_TYPE_DO_WHILE, NULL, NULL, $7, $3);
+            $$ = create_do_while_node($7, $3);
         }
     ;
 
 repeatStmt
     : REPEAT LBRACE Slist RBRACE UNTIL LPAREN E RPAREN PUNCTUATION
         {
-            if($7->type != DATA_TYPE_BOOLEAN){
-                yyerror("Condition must be boolean!\n");
-            }
-            $$ = create_node(-1, NULL, DATA_TYPE_VOID, NODE_TYPE_REPEAT_UNTIL, NULL, NULL, $7, $3);
+            $$ = create_repeat_until_node($7, $3);
         }
     ;
 
@@ -307,106 +219,63 @@ continueStmt
 E
     : E PLUS E
         { 
-            if( !($1->type == DATA_TYPE_INTEGER && $3->type == DATA_TYPE_INTEGER) ){
-                yyerror("nodeType MisMatch!\n");
-            }
-
-            $$ = create_node(-1, NULL, DATA_TYPE_INTEGER, NODE_TYPE_PLUS, NULL, NULL, $1, $3); 
+            $$ = create_arithmetic_node($1, $3, NODE_TYPE_PLUS);
         }
     | E MINUS E
         { 
-            if( !($1->type == DATA_TYPE_INTEGER && $3->type == DATA_TYPE_INTEGER) ){
-                yyerror("nodeType MisMatch!\n");
-            }
-
-            $$ = create_node(-1, NULL, DATA_TYPE_INTEGER, NODE_TYPE_MINUS, NULL, NULL, $1, $3); 
+            $$ = create_arithmetic_node($1, $3, NODE_TYPE_MINUS);
         }
     | E MULT E
         { 
-            if( !($1->type == DATA_TYPE_INTEGER && $3->type == DATA_TYPE_INTEGER) ){
-                yyerror("nodeType MisMatch!\n");
-            }
-
-            $$ = create_node(-1, NULL, DATA_TYPE_INTEGER, NODE_TYPE_MULT, NULL, NULL, $1, $3); 
+            $$ = create_arithmetic_node($1, $3, NODE_TYPE_MULT);
         }
     | E DIV E
         { 
-            if( !($1->type == DATA_TYPE_INTEGER && $3->type == DATA_TYPE_INTEGER) ){
-                yyerror("nodeType MisMatch!\n");
-            }
-
-            $$ = create_node(-1, NULL, DATA_TYPE_INTEGER, NODE_TYPE_DIV, NULL, NULL, $1, $3); 
+            $$ = create_arithmetic_node($1, $3, NODE_TYPE_DIV);
         }
 
     | E LT E
         { 
-            if( !($1->type == DATA_TYPE_INTEGER && $3->type == DATA_TYPE_INTEGER) ){
-                yyerror("nodeType MisMatch!\n");
-            }
-
-            $$ = create_node(-1, NULL, DATA_TYPE_BOOLEAN, NODE_TYPE_LT, NULL, NULL, $1, $3); 
+            $$ = create_boolean_node($1, $3, NODE_TYPE_LT);
         }
     
     | E GT E
         { 
-            if( !($1->type == DATA_TYPE_INTEGER && $3->type == DATA_TYPE_INTEGER) ){
-                yyerror("nodeType MisMatch!\n");
-            }
-
-            $$ = create_node(-1, NULL, DATA_TYPE_BOOLEAN, NODE_TYPE_GT, NULL, NULL, $1, $3); 
+            $$ = create_boolean_node($1, $3, NODE_TYPE_GT);
         }
     
     | E LE E
         { 
-            if( !($1->type == DATA_TYPE_INTEGER && $3->type == DATA_TYPE_INTEGER) ){
-                yyerror("nodeType MisMatch!\n");
-            }
-
-            $$ = create_node(-1, NULL, DATA_TYPE_BOOLEAN, NODE_TYPE_LE, NULL, NULL, $1, $3); 
+            $$ = create_boolean_node($1, $3, NODE_TYPE_LE);
         }
     
     | E GE E
         { 
-            if( !($1->type == DATA_TYPE_INTEGER && $3->type == DATA_TYPE_INTEGER) ){
-                yyerror("nodeType MisMatch!\n");
-            }
-
-            $$ = create_node(-1, NULL, DATA_TYPE_BOOLEAN, NODE_TYPE_GE, NULL, NULL, $1, $3);   
+            $$ = create_boolean_node($1, $3, NODE_TYPE_GE); 
         }
 
     | E EQ E
         { 
-            if( !($1->type == DATA_TYPE_INTEGER && $3->type == DATA_TYPE_INTEGER) ){
-                yyerror("nodeType MisMatch!\n");
-            }
-
-            $$ = create_node(-1, NULL, DATA_TYPE_BOOLEAN, NODE_TYPE_EQ, NULL, NULL, $1, $3); 
+            $$ = create_boolean_node($1, $3, NODE_TYPE_EQ);
         }
     
     | E NE E
         { 
-            if( !($1->type == DATA_TYPE_INTEGER && $3->type == DATA_TYPE_INTEGER) ){
-                yyerror("nodeType MisMatch!\n");
-            }
-
-            $$ = create_node(-1, NULL, DATA_TYPE_BOOLEAN,  NODE_TYPE_NE, NULL, NULL, $1, $3); 
+            $$ = create_boolean_node($1, $3, NODE_TYPE_NE);
         }
     
     | NUM
-        { $$ = $1; }
+        { 
+            $$ = $1; 
+        }
     | STRING_LITERAL
-        { $$ = $1; }
+        { 
+            $$ = $1;
+        }
     | ID
         { 
-            Stnode* temp = Lookup($1->varname);
-            if(temp == NULL){
-                yyerror("VARIABLE IS NOT DECLARED\n");
-            }
-
-            $1->entry = temp;
-            $1->type = temp->type;
+            $1 = create_id_node($1);
             $$ = $1; 
-
         }
     | LPAREN E RPAREN
         { 
@@ -414,15 +283,7 @@ E
         }
     | ID LSQUARE E RSQUARE
         {
-            Stnode* temp = Lookup($1->varname);
-            if(temp == NULL){
-                yyerror("VARIABLE IS NOT DECLARED\n");
-            }
-
-            $1->entry = temp;
-            $1->type = temp->type;
-
-            $$ = create_node(-1, NULL, temp->type, NODE_TYPE_ARRAY, NULL, NULL, $1, $3);
+            $$ = create_array_node($1, $3);
         }
     ;
 

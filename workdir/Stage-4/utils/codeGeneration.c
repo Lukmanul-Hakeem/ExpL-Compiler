@@ -1,4 +1,6 @@
 #include "codeGeneration.h"
+#include "parseTree.h"
+#include "./../GlobalSymbolTable/GlobalSymbolTable.h"
 
 int label = 0;
 int conditionLabel = 0;
@@ -60,11 +62,19 @@ void generate_Code_ReadSys(int addrReg, FILE *fptr)
 
 void readSystemCall(tnode *node, FILE *fptr)
 {
-    int addr = getAddress(node->left->entry);
-    int addrReg = getReg();
-    fprintf(fptr, "MOV R%d, %d\n", addrReg, addr);
-    generate_Code_ReadSys(addrReg, fptr);
-    freeReg(addrReg);
+    if (node->left->nodetype == NODE_TYPE_ARRAY)
+    {
+        generate_code_array_read(node->left, fptr);
+    }
+    else
+    {
+
+        int addr = getAddress(node->left->entry);
+        int addrReg = getReg();
+        fprintf(fptr, "MOV R%d, %d\n", addrReg, addr);
+        generate_Code_ReadSys(addrReg, fptr);
+        freeReg(addrReg);
+    }
 }
 
 void printContent(int dataReg, FILE *fptr)
@@ -94,10 +104,12 @@ void printContent(int dataReg, FILE *fptr)
 void writeSystemCall(tnode *node, FILE *fptr)
 {
     int dataReg = -1;
+
     if (node->left->type == DATA_TYPE_INTEGER)
         dataReg = generate_arithmetic_code(node->left, fptr);
     else
         dataReg = generate_string_code(node->left, fptr);
+
     printContent(dataReg, fptr);
     freeReg(dataReg);
 }
@@ -179,9 +191,14 @@ void generate_assignment_code(tnode *node, FILE *fptr)
 
     int rightReg = -1;
 
-    if (node->right->type == DATA_TYPE_INTEGER)
+    if (node->left->nodetype == NODE_TYPE_ARRAY)
+    {
+        generate_code_array_assign(node, fptr);
+        return;
+    }
+    else if (node->right->type == DATA_TYPE_INTEGER)
         rightReg = generate_arithmetic_code(node->right, fptr);
-    else
+    else if (node->right->type == DATA_TYPE_STRING)
         rightReg = generate_string_code(node->right, fptr);
 
     int addr = getAddress(node->left->entry);
@@ -361,7 +378,9 @@ int getArrayLastAddress(Stnode *node)
 {
     int startAddress = node->binding;
     int size = node->size;
-    return startAddress + size;
+    int innerSize = node->innerSize;
+    int totalElements = size * innerSize;
+    return startAddress + totalElements;
 }
 
 void check_array_bound(int indexReg, tnode *root, FILE *fptr)
@@ -415,7 +434,6 @@ void generate_code_array_read(tnode *root, FILE *fptr)
     freeReg(indexReg);
 }
 
-
 void code_Generation(tnode *root, FILE *fptr, int temp)
 {
     if (root == NULL)
@@ -465,14 +483,6 @@ void code_Generation(tnode *root, FILE *fptr, int temp)
     else if (root->nodetype == NODE_TYPE_CONTINUE)
     {
         fprintf(fptr, "JMP LOOP%d\n", temp);
-    }
-    else if (root->nodetype == NODE_TYPE_ARR_ASSIGN)
-    {
-        generate_code_array_assign(root, fptr);
-    }
-    else if (root->nodetype == NODE_TYPE_ARR_READ)
-    {
-        generate_code_array_read(root, fptr);
     }
 
     return;

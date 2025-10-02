@@ -1,6 +1,9 @@
-#include "./parseTree.h"
+#include "parseTree.h"
+#include "./../GlobalSymbolTable/GlobalSymbolTable.h"
 
-tnode *create_node(int val, char *sval, int type, int nodeType, char *c, Stnode *entry, tnode *left, struct tnode *right)
+void yyerror(const char *s);
+
+tnode *create_node(int val, char *sval, int type, int nodeType, char *c, Stnode *entry, tnode *left, tnode *right)
 {
 
     tnode *newNode = (tnode *)malloc(sizeof(tnode));
@@ -115,117 +118,137 @@ void inorder(tnode *root)
     }
 }
 
+tnode* create_array_node(tnode* id, tnode* index) {
 
-// void inorder(tnode *root)
-// {
-//     if (root == NULL)
-//         return;
+    Stnode* temp = Lookup(id->varname);
+    if(temp == NULL){
+        yyerror("VARIABLE IS NOT DECLARED\n");
+    }
 
-//     switch (root->nodetype)
-//     {
-//         case NODE_TYPE_ID:
-//             printf("%s", root->varname ? root->varname : "NULL");
-//             break;
+    if(temp->innerSize == 0){
+        yyerror("NOT AN ARRAY\n");
+    }
 
-//         case NODE_TYPE_VALUE:
-//             printf("%d", root->val);
-//             break;
+    id->entry = temp;
 
-//         case NODE_TYPE_STRING:
-//             printf("\"%s\"", root->sval);
-//             break;
+    if(index->type != DATA_TYPE_INTEGER){
+        yyerror("Array Index must be Integer\n");
+    }
+    
+    id->type = temp->type;
 
-//         case NODE_TYPE_WRITE:
-//             printf("write(");
-//             inorder(root->left); // print what is being written
-//             printf(");\n");
-//             break;
+    return create_node(-1, NULL, temp->type, NODE_TYPE_ARRAY, NULL, NULL, id, index);
+}
 
-//         case NODE_TYPE_READ:
-//             printf("read(");
-//             if(root->left && root->left->nodetype == NODE_TYPE_ID)
-//                 printf("%s", root->left->varname);
-//             printf(");\n");
-//             break;
+tnode* create_id_node(tnode* id) {
 
-//         case NODE_TYPE_ASSIGN:
-//             inorder(root->left);
-//             printf(" = ");
-//             inorder(root->right);
-//             printf(";\n");
-//             break;
+    Stnode* temp = Lookup(id->varname);
+    if(temp == NULL){
+        yyerror("VARIABLE IS NOT DECLARED\n");
+    }
 
-//         case NODE_TYPE_CONNECTOR:
-//             inorder(root->left);
-//             inorder(root->right);
-//             break;
+    id->entry = temp;
+    id->type = temp->type; 
 
-//         case NODE_TYPE_IF:
-//             printf("if(");
-//             inorder(root->left);  // condition
-//             printf(") {\n");
-//             inorder(root->right); // then block
-//             printf("}\n");
-//             break;
+    return id;
+}
 
-//         case NODE_TYPE_IF_ELSE:
-//             printf("if(");
-//             inorder(root->left);  // condition
-//             printf(") {\n");
-//             if(root->right && root->right->left)
-//                 inorder(root->right->left);  // then block
-//             printf("} else {\n");
-//             if(root->right && root->right->right)
-//                 inorder(root->right->right); // else block
-//             printf("}\n");
-//             break;
+tnode* create_write_node(tnode* expr) {
 
-//         case NODE_TYPE_WHILE:
-//             printf("while(");
-//             inorder(root->left);  // condition
-//             printf(") {\n");
-//             inorder(root->right); // body
-//             printf("}\n");
-//             break;
+    if(expr->type != DATA_TYPE_INTEGER && expr->type != DATA_TYPE_STRING){
+        yyerror("WRITE can only be done on Integer or String\n");
+    }
 
-//         case NODE_TYPE_DO_WHILE:
-//             printf("do {\n");
-//             inorder(root->right); // body
-//             printf("} while(");
-//             inorder(root->left);  // condition
-//             printf(");\n");
-//             break;
+    return create_node(-1, NULL, DATA_TYPE_VOID, NODE_TYPE_WRITE, NULL, NULL, expr, NULL);
+}
 
-//         case NODE_TYPE_REPEAT_UNTIL:
-//             printf("repeat {\n");
-//             inorder(root->right); // body
-//             printf("} until(");
-//             inorder(root->left);  // condition
-//             printf(");\n");
-//             break;
+tnode* create_read_node(tnode* id) {
 
-//         case NODE_TYPE_BREAK:
-//             printf("break;\n");
-//             break;
+    if(id->type != DATA_TYPE_INTEGER && id->type != DATA_TYPE_STRING){
+        yyerror("READ can only be done on Integer or String\n");
+    }
 
-//         case NODE_TYPE_CONTINUE:
-//             printf("continue;\n");
-//             break;
+    return create_node(-1, NULL, DATA_TYPE_VOID, NODE_TYPE_READ, NULL, NULL, id, NULL);
+}
 
-//         // arithmetic and boolean operators
-//         case NODE_TYPE_PLUS: case NODE_TYPE_MINUS: case NODE_TYPE_MULT:
-//         case NODE_TYPE_DIV: case NODE_TYPE_LT: case NODE_TYPE_LE:
-//         case NODE_TYPE_GT: case NODE_TYPE_GE: case NODE_TYPE_EQ:
-//         case NODE_TYPE_NE:
-//             printf("(");
-//             inorder(root->left);
-//             printf(" %s ", getNodeSymbol(root->nodetype));
-//             inorder(root->right);
-//             printf(")");
-//             break;
+tnode* create_assign_node(tnode* left, tnode* right) {
 
-//         default:
-//             printf("UNKNOWN_NODE");
-//             break;
-//     }
-// }
+    if(left->type != right->type){
+        yyerror("Type Mismatch in Assignment\n");
+    }
+
+    if((left->type == DATA_TYPE_INTEGER && right->type == DATA_TYPE_INTEGER) || (left->type == DATA_TYPE_STRING && right->type == DATA_TYPE_STRING)) 
+        return create_node(-1, NULL, DATA_TYPE_VOID, NODE_TYPE_ASSIGN, NULL, NULL, left, right);
+    else {
+        yyerror("nodeType MisMatch - ASSIGN!\n");
+        return NULL;
+    }
+}
+
+tnode* create_if_node(tnode* condition, tnode* thenBranch) {
+
+    if(condition->type != DATA_TYPE_BOOLEAN){
+        yyerror("Condition in IF should be Boolean\n");
+    }
+
+    return create_node(-1, NULL, DATA_TYPE_VOID, NODE_TYPE_IF, NULL, NULL, condition, thenBranch);
+}
+
+tnode* create_if_else_node(tnode* condition, tnode* thenBranch, tnode* elseBranch) {
+
+    if(condition->type != DATA_TYPE_BOOLEAN){
+        yyerror("Condition in IF-ELSE should be Boolean\n");
+    }
+
+    tnode* connectorNode = create_node(-1, NULL, DATA_TYPE_VOID, NODE_TYPE_CONNECTOR, NULL, NULL, thenBranch, elseBranch);
+    tnode* ifElseNode = create_node(-1, NULL, DATA_TYPE_VOID, NODE_TYPE_IF_ELSE, NULL, NULL, condition, connectorNode);
+
+    return ifElseNode;
+}
+
+tnode* create_while_node(tnode* condition, tnode* body) {
+
+    if(condition->type != DATA_TYPE_BOOLEAN){
+        yyerror("Condition in WHILE should be Boolean\n");
+    }
+
+    return create_node(-1, NULL, DATA_TYPE_VOID, NODE_TYPE_WHILE, NULL, NULL, condition, body);
+}
+
+tnode* create_do_while_node(tnode* body, tnode* condition) {
+
+    if(condition->type != DATA_TYPE_BOOLEAN){
+        yyerror("Condition in DO-WHILE should be Boolean\n");
+    }
+
+    return create_node(-1, NULL, DATA_TYPE_VOID, NODE_TYPE_DO_WHILE, NULL, NULL, body, condition);
+}
+
+tnode* create_repeat_until_node(tnode* body, tnode* condition) {
+
+    if(condition->type != DATA_TYPE_BOOLEAN){
+        yyerror("Condition in REPEAT-UNTIL should be Boolean\n");
+    }
+
+    return create_node(-1, NULL, DATA_TYPE_VOID, NODE_TYPE_REPEAT_UNTIL, NULL, NULL, body, condition);
+}
+
+tnode* create_arithmetic_node(tnode* left, tnode* right, int operator) {
+
+    if(left->type != DATA_TYPE_INTEGER || right->type != DATA_TYPE_INTEGER){
+        yyerror("Arithmetic operations can only be done on Integers\n");
+    }
+
+    return create_node(-1, NULL, DATA_TYPE_INTEGER, operator, NULL, NULL, left, right);
+}
+
+tnode* create_boolean_node(tnode* left, tnode* right, int operator) {
+
+
+    if(left->type != DATA_TYPE_INTEGER || right->type != DATA_TYPE_INTEGER){
+        yyerror("Relational operations can only be done on Integers\n");
+    }
+
+    return create_node(-1, NULL, DATA_TYPE_BOOLEAN, operator, NULL, NULL, left, right);
+}
+
