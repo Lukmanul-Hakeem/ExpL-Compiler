@@ -144,6 +144,11 @@ InputStmt
             tnode* arrayNode = create_array_node($3, $5);
             $$ = create_read_node(arrayNode);
         }
+    | READ LPAREN ID LSQUARE E RSQUARE LSQUARE E RSQUARE RPAREN PUNCTUATION
+        {
+            tnode* arrayNode = create_2D_array_node($3, $5, $8);
+            $$ = create_read_node(arrayNode);
+        }
     ;
 
 OutputStmt
@@ -163,6 +168,11 @@ AsgStmt
         {
             tnode* arrayNode = create_array_node($1, $3);
             $$ = create_assign_node(arrayNode, $6);
+        }
+    | ID LSQUARE E RSQUARE LSQUARE E RSQUARE EQUAL E PUNCTUATION
+        {
+            tnode* arrayNode = create_2D_array_node($1, $3, $6);
+            $$ = create_assign_node(arrayNode, $9);
         }
 
     ;
@@ -284,6 +294,10 @@ E
     | ID LSQUARE E RSQUARE
         {
             $$ = create_array_node($1, $3);
+        }
+    | ID LSQUARE E RSQUARE LSQUARE E RSQUARE
+        {
+            $$ = create_2D_array_node($1, $3, $6);
         }
     ;
 

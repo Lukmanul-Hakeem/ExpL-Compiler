@@ -47,5 +47,8 @@ void check_array_bound(int indexReg, tnode *root, FILE *fptr);
 int  generate_code_array_index(tnode *root, FILE *fptr);
 void generate_code_array_assign(tnode *root, FILE *fptr);
 void generate_code_array_read(tnode *root, FILE *fptr);
+void generate_code_2d_array_assign(tnode *root, FILE *fptr);
+int  generate_code_2d_array_index(tnode *root, FILE *fptr);
+void generate_code_2d_array_read(tnode *root, FILE *fptr);
 
 #endif

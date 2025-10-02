@@ -65,6 +65,8 @@ void readSystemCall(tnode *node, FILE *fptr)
     if (node->left->nodetype == NODE_TYPE_ARRAY)
     {
         generate_code_array_read(node->left, fptr);
+    }else if(node->left->nodetype == NODE_TYPE_2D_ARRAY) {
+        generate_code_2d_array_read(node->left, fptr);
     }
     else
     {
@@ -159,6 +161,14 @@ int generate_arithmetic_code(tnode *root, FILE *fptr)
         return reg;
     }
 
+    if(root->nodetype == NODE_TYPE_2D_ARRAY) {
+        int indexReg = generate_code_2d_array_index(root, fptr);
+        int reg = getReg();
+        fprintf(fptr, "MOV R%d, [R%d]\n", reg, indexReg);
+        freeReg(indexReg);
+        return reg; 
+    }
+
     int leftReg = generate_arithmetic_code(root->left, fptr);
     int rightReg = generate_arithmetic_code(root->right, fptr);
 
@@ -186,6 +196,58 @@ int generate_arithmetic_code(tnode *root, FILE *fptr)
     return leftReg;
 }
 
+void generate_code_array_assign(tnode *root, FILE *fptr)
+{
+    int regIndex = generate_code_array_index(root->left, fptr);
+
+    int regVal = generate_arithmetic_code(root->right, fptr);
+    fprintf(fptr, "MOV [R%d], R%d\n", regIndex, regVal);
+
+    freeReg(regIndex);
+    freeReg(regVal);
+}
+
+int generate_code_2d_array_index(tnode *root, FILE *fptr)
+{
+    int rowIndexReg = generate_arithmetic_code(root->right->left, fptr);
+    int colIndexReg = generate_arithmetic_code(root->right->right, fptr);
+
+    Stnode* arrayNode = root->left->entry;
+
+    int innerSize = arrayNode->innerSize;
+
+    int innerSizeReg = getReg();
+
+    fprintf(fptr, "MOV R%d, %d\n", innerSizeReg, innerSize);
+    fprintf(fptr, "MUL R%d, R%d\n", rowIndexReg, innerSizeReg);
+    fprintf(fptr, "ADD R%d, R%d\n", rowIndexReg, colIndexReg);
+
+    check_array_bound(rowIndexReg, root->left, fptr);
+
+    freeReg(colIndexReg);
+    freeReg(innerSizeReg);
+
+    return rowIndexReg;
+}
+
+void generate_code_2d_array_assign(tnode *root, FILE *fptr)
+{
+    int indexReg = generate_code_2d_array_index(root->left, fptr);
+
+    int regVal = generate_arithmetic_code(root->right, fptr);
+    fprintf(fptr, "MOV [R%d], R%d\n", indexReg, regVal);
+
+    freeReg(indexReg);
+    freeReg(regVal);
+}
+
+void generate_code_2d_array_read(tnode *root, FILE *fptr)
+{
+    int indexReg = generate_code_2d_array_index(root, fptr);
+    generate_Code_ReadSys(indexReg, fptr);
+    freeReg(indexReg);
+}
+
 void generate_assignment_code(tnode *node, FILE *fptr)
 {
 
@@ -194,6 +256,10 @@ void generate_assignment_code(tnode *node, FILE *fptr)
     if (node->left->nodetype == NODE_TYPE_ARRAY)
     {
         generate_code_array_assign(node, fptr);
+        return;
+    }
+    else if(node->left->nodetype == NODE_TYPE_2D_ARRAY) {
+        generate_code_2d_array_assign(node, fptr);
         return;
     }
     else if (node->right->type == DATA_TYPE_INTEGER)
@@ -230,64 +296,36 @@ void exitProgram(FILE *fptr)
 
 int generate_boolean_code(tnode *root, FILE *fptr)
 {
+    int left = generate_arithmetic_code(root->left, fptr);
+    int right = generate_arithmetic_code(root->right, fptr);
 
-    if (root->nodetype == NODE_TYPE_ID)
+    switch (root->nodetype)
     {
-        int reg = getReg();
-        int addr = getAddress(root->entry);
-        fprintf(fptr, "MOV R%d, [%d]\n", reg, addr);
-        return reg;
+    case NODE_TYPE_LT:
+        fprintf(fptr, "LT R%d, R%d\n", left, right);
+        break;
+    case NODE_TYPE_LE:          
+        fprintf(fptr, "LE R%d, R%d\n", left, right);
+        break;      
+    case NODE_TYPE_GT:          
+        fprintf(fptr, "GT R%d, R%d\n", left, right);
+        break;
+    case NODE_TYPE_GE:          
+        fprintf(fptr, "GE R%d, R%d\n", left, right);
+        break;
+    case NODE_TYPE_EQ:        
+        fprintf(fptr, "EQ R%d, R%d\n", left, right);
+        break;          
+    case NODE_TYPE_NE:          
+        fprintf(fptr, "NE R%d, R%d\n", left, right);
+        break;  
+    default:
+        printf("unknown Operator.\n");
+        exit(1);
     }
-    else if (root->nodetype == NODE_TYPE_VALUE)
-    {
-        int reg = getReg();
-        fprintf(fptr, "MOV R%d, %d\n", reg, root->val);
-        return reg;
-    }
-    else if (root->nodetype == NODE_TYPE_ARRAY)
-    {
-        int indexReg = generate_code_array_index(root, fptr);
 
-        int reg = getReg();
-        fprintf(fptr, "MOV R%d, [R%d]\n", reg, indexReg);
-
-        freeReg(indexReg);
-        return reg;
-    }
-    else
-    {
-        int left = generate_boolean_code(root->left, fptr);
-        int right = generate_boolean_code(root->right, fptr);
-
-        if (root->nodetype == NODE_TYPE_LT)
-        {
-            fprintf(fptr, "LT R%d, R%d\n", left, right);
-        }
-        else if (root->nodetype == NODE_TYPE_LE)
-        {
-            fprintf(fptr, "LE R%d, R%d\n", left, right);
-        }
-        else if (root->nodetype == NODE_TYPE_GT)
-        {
-            fprintf(fptr, "GT R%d, R%d\n", left, right);
-        }
-        else if (root->nodetype == NODE_TYPE_GE)
-        {
-            fprintf(fptr, "GE R%d, R%d\n", left, right);
-        }
-        else if (root->nodetype == NODE_TYPE_EQ)
-        {
-            fprintf(fptr, "EQ R%d, R%d\n", left, right);
-        }
-        else if (root->nodetype == NODE_TYPE_NE)
-        {
-            fprintf(fptr, "NE R%d, R%d\n", left, right);
-        }
-
-        freeReg(right);
-
-        return left;
-    }
+    freeReg(right);
+    return left;
 }
 
 void generate_if_else_code(tnode *root, FILE *fptr, int loopLabel)
@@ -414,17 +452,6 @@ int generate_code_array_index(tnode *root, FILE *fptr)
     int regIndex = generate_arithmetic_code(root->right, fptr);
     check_array_bound(regIndex, root->left, fptr);
     return regIndex;
-}
-
-void generate_code_array_assign(tnode *root, FILE *fptr)
-{
-    int regIndex = generate_code_array_index(root->left, fptr);
-
-    int regVal = generate_arithmetic_code(root->right, fptr);
-    fprintf(fptr, "MOV [R%d], R%d\n", regIndex, regVal);
-
-    freeReg(regIndex);
-    freeReg(regVal);
 }
 
 void generate_code_array_read(tnode *root, FILE *fptr)

@@ -140,6 +140,29 @@ tnode* create_array_node(tnode* id, tnode* index) {
     return create_node(-1, NULL, temp->type, NODE_TYPE_ARRAY, NULL, NULL, id, index);
 }
 
+tnode* create_2D_array_node(tnode* id, tnode* index1, tnode* index2) {
+
+    Stnode* temp = Lookup(id->varname);
+    if(temp == NULL){
+        yyerror("VARIABLE IS NOT DECLARED\n");
+    }
+
+    if(temp->size == 1 || temp->innerSize == 0){
+        yyerror("NOT A 2D ARRAY\n");
+    }
+
+    id->entry = temp;
+
+    if(index1->type != DATA_TYPE_INTEGER || index2->type != DATA_TYPE_INTEGER){
+        yyerror("Array Indices must be Integer\n");
+    }
+    
+    id->type = temp->type;
+
+    tnode* connectorNode = create_node(-1, NULL, DATA_TYPE_VOID, NODE_TYPE_CONNECTOR, NULL, NULL, index1, index2);
+    return create_node(-1, NULL, temp->type, NODE_TYPE_2D_ARRAY, NULL, NULL, id, connectorNode);
+}
+
 tnode* create_id_node(tnode* id) {
 
     Stnode* temp = Lookup(id->varname);
@@ -251,4 +274,5 @@ tnode* create_boolean_node(tnode* left, tnode* right, int operator) {
 
     return create_node(-1, NULL, DATA_TYPE_BOOLEAN, operator, NULL, NULL, left, right);
 }
+
 

@@ -34,7 +34,8 @@ enum node_type {
     NODE_TYPE_STRING,
     NODE_TYPE_ARR_ASSIGN,
     NODE_TYPE_ARR_READ,
-    NODE_TYPE_ARRAY = 1000
+    NODE_TYPE_ARRAY,
+    NODE_TYPE_2D_ARRAY
 };
 
 enum node_data_type {
@@ -61,6 +62,7 @@ typedef struct tnode {
 /* function prototypes - use tnode and Stnode forward decls where needed */
 tnode* create_node(int val, char* sval, int type, int nodeType, char* c, Stnode* entry, tnode *left, tnode *right);
 tnode* create_array_node(tnode* id, tnode* index);
+tnode* create_2D_array_node(tnode* id, tnode* index1, tnode* index2);
 tnode* create_id_node(tnode* id);
 tnode* create_write_node(tnode* expr);
 tnode* create_read_node(tnode* id);
