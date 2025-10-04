@@ -85,13 +85,14 @@ extern int yydebug;
     NOT = 291,
     NE = 292,
     EQ = 293,
-    NUM = 294,
-    ID = 295,
-    STRING_LITERAL = 296,
-    DECL = 297,
-    ENDDECL = 298,
-    INT = 299,
-    STR = 300
+    AND = 294,
+    NUM = 295,
+    ID = 296,
+    STRING_LITERAL = 297,
+    DECL = 298,
+    ENDDECL = 299,
+    INT = 300,
+    STR = 301
   };
 #endif
 /* Tokens.  */
@@ -131,13 +132,14 @@ extern int yydebug;
 #define NOT 291
 #define NE 292
 #define EQ 293
-#define NUM 294
-#define ID 295
-#define STRING_LITERAL 296
-#define DECL 297
-#define ENDDECL 298
-#define INT 299
-#define STR 300
+#define AND 294
+#define NUM 295
+#define ID 296
+#define STRING_LITERAL 297
+#define DECL 298
+#define ENDDECL 299
+#define INT 300
+#define STR 301
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
@@ -147,7 +149,7 @@ union YYSTYPE
 
     tnode* node;
 
-#line 151 "y.tab.h"
+#line 153 "y.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

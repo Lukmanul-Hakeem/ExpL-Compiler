@@ -106,12 +106,14 @@ void printContent(int dataReg, FILE *fptr)
 void writeSystemCall(tnode *node, FILE *fptr)
 {
     int dataReg = -1;
+    // printf(" string : %d\n", node->nodetype);
 
-    if (node->left->type == DATA_TYPE_INTEGER)
+    if (node->left->type == DATA_TYPE_INTEGER){
         dataReg = generate_arithmetic_code(node->left, fptr);
-    else
+    }
+    else{
         dataReg = generate_string_code(node->left, fptr);
-
+    }
     printContent(dataReg, fptr);
     freeReg(dataReg);
 }
@@ -126,7 +128,15 @@ int generate_string_code(tnode *node, FILE *fptr)
     }
     else
     {
-        fprintf(fptr, "MOV R%d, \"%s\"\n", reg, node->sval);
+        if(node->nodetype != NODE_TYPE_DEREF)
+            fprintf(fptr, "MOV R%d, \"%s\"\n", reg, node->sval);
+        else{
+            int addr = getAddress(node->left->entry);
+            int regAddr = getReg();
+            fprintf(fptr, "MOV R%d, [%d]\n",regAddr, addr);
+            fprintf(fptr, "MOV R%d, [R%d]\n", reg, regAddr);
+            freeReg(regAddr);
+        }
     }
     return reg;
 }
@@ -167,6 +177,18 @@ int generate_arithmetic_code(tnode *root, FILE *fptr)
         fprintf(fptr, "MOV R%d, [R%d]\n", reg, indexReg);
         freeReg(indexReg);
         return reg; 
+    }
+
+    if(root->nodetype == NODE_TYPE_DEREF){
+        int addr = getAddress(root->left->entry);
+        int regAddr = getReg();
+        fprintf(fptr, "MOV R%d, [%d]\n", regAddr, addr);
+
+        int regVal = getReg();
+        fprintf(fptr, "MOV R%d, [R%d]\n", regVal, regAddr);
+
+        freeReg(regAddr);
+        return regVal;
     }
 
     int leftReg = generate_arithmetic_code(root->left, fptr);
@@ -265,14 +287,59 @@ void generate_assignment_code(tnode *node, FILE *fptr)
         generate_code_2d_array_assign(node, fptr);
         return;
     }
+    else if(node->left->nodetype == NODE_TYPE_DEREF){
+        generate_deref_assign(node, fptr);
+        return;
+    }
+    else if(node->right->nodetype == NODE_TYPE_REF){
+        generate_address_assign(node, fptr);
+        return;
+    }
     else if (node->right->type == DATA_TYPE_INTEGER)
         rightReg = generate_arithmetic_code(node->right, fptr);
     else if (node->right->type == DATA_TYPE_STRING)
         rightReg = generate_string_code(node->right, fptr);
+    else if(node->right->type == DATA_TYPE_INTEGER_PTR || node->right->type == DATA_TYPE_STRING_PTR){
+        int addr = getAddress(node->right->entry);
+        rightReg = getReg();
+        fprintf(fptr, "MOV R%d, [%d]\n", rightReg, addr);
+    }
+
 
     int addr = getAddress(node->left->entry);
     fprintf(fptr, "MOV [%d], R%d\n", addr, rightReg);
     freeReg(rightReg);
+}
+
+void generate_address_assign(tnode* root, FILE* fptr){
+    tnode* pointerNode = root->left;
+    tnode* idNode = root->right->left;
+
+    int idAddr = getAddress(idNode->entry);
+    int pointerAddr = getAddress(pointerNode->entry);
+
+    fprintf(fptr, "MOV [%d], %d\n", pointerAddr, idAddr);
+    
+}
+
+void generate_deref_assign(tnode* root, FILE* fptr){
+    tnode* pointerNode = root->left->left;
+    tnode* exprNode = root->right;
+
+    int regVal = -1;
+
+    if(exprNode->type == DATA_TYPE_INTEGER) regVal = generate_arithmetic_code(exprNode, fptr);
+    else regVal = generate_string_code(exprNode, fptr);
+
+    int addr = getAddress(pointerNode->entry);
+    int regAddr = getReg();
+
+    fprintf(fptr, "MOV R%d, [%d]\n", regAddr, addr);
+    fprintf(fptr, "MOV [R%d], R%d\n", regAddr, regVal);
+
+    freeReg(regVal);
+    freeReg(regAddr);
+
 }
 
 void exitProgram(FILE *fptr)

@@ -36,7 +36,9 @@ enum node_type {
     NODE_TYPE_ARR_ASSIGN,
     NODE_TYPE_ARR_READ,
     NODE_TYPE_ARRAY,
-    NODE_TYPE_2D_ARRAY
+    NODE_TYPE_2D_ARRAY,
+    NODE_TYPE_DEREF,
+    NODE_TYPE_REF
 };
 
 enum node_data_type {
@@ -44,7 +46,9 @@ enum node_data_type {
     DATA_TYPE_BOOLEAN,
     DATA_TYPE_VOID,
     DATA_TYPE_STRING,
-    DATA_TYPE_ARRAY
+    DATA_TYPE_ARRAY,
+    DATA_TYPE_INTEGER_PTR,
+    DATA_TYPE_STRING_PTR
 };
 
 int var[26];
@@ -75,6 +79,9 @@ tnode* create_do_while_node(tnode* body, tnode* condition);
 tnode* create_repeat_until_node(tnode* body, tnode* condition);
 tnode* create_arithmetic_node(tnode* left, tnode* right, int operator);
 tnode* create_boolean_node(tnode* left, tnode* right, int operator);
+
+tnode* create_deref_node(tnode* id);
+tnode* create_addr_node(tnode* id);
 
 const char* getNodeSymbol(int nodetype);
 void inorder(tnode* root);

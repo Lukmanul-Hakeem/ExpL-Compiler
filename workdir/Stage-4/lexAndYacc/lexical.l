@@ -50,6 +50,7 @@
 
 "!"         { return NOT; }
 "!="        { return NE; }
+"&"         { return AND; }
 
 "("         { return LPAREN; }
 ")"         { return RPAREN; }

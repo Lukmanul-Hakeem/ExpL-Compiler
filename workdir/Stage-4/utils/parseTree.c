@@ -200,12 +200,7 @@ tnode* create_assign_node(tnode* left, tnode* right) {
         yyerror("Type Mismatch in Assignment\n");
     }
 
-    if((left->type == DATA_TYPE_INTEGER && right->type == DATA_TYPE_INTEGER) || (left->type == DATA_TYPE_STRING && right->type == DATA_TYPE_STRING)) 
-        return create_node(-1, NULL, DATA_TYPE_VOID, NODE_TYPE_ASSIGN, NULL, NULL, left, right);
-    else {
-        yyerror("nodeType MisMatch - ASSIGN!\n");
-        return NULL;
-    }
+    return create_node(-1, NULL, DATA_TYPE_VOID, NODE_TYPE_ASSIGN, NULL, NULL, left, right);
 }
 
 tnode* create_if_node(tnode* condition, tnode* thenBranch) {
@@ -273,6 +268,41 @@ tnode* create_boolean_node(tnode* left, tnode* right, int operator) {
     }
 
     return create_node(-1, NULL, DATA_TYPE_BOOLEAN, operator, NULL, NULL, left, right);
+}
+
+tnode* create_deref_node(tnode* id){
+
+    Stnode* temp = Lookup(id->varname);
+
+    if(temp == NULL){
+        yyerror("VARIABLE IS NOT DECLARED\n");
+    }
+
+    id->type = temp->type;
+    id->entry = temp;
+
+    if(id->type == DATA_TYPE_INTEGER_PTR) 
+        return create_node(-1, NULL, DATA_TYPE_INTEGER, NODE_TYPE_DEREF, NULL, NULL, id, NULL);
+    else 
+        return create_node(-1, NULL, DATA_TYPE_STRING, NODE_TYPE_DEREF, NULL, NULL, id, NULL);
+
+}
+
+tnode* create_addr_node(tnode* id){
+    Stnode* temp = Lookup(id->varname);
+
+    if(temp == NULL){
+       yyerror("VARIABLE IS NOT DECLARED\n");
+    }
+
+    id->type = temp->type;
+    id->entry = temp;
+
+    if(id->type == DATA_TYPE_INTEGER) 
+        return create_node(-1, NULL, DATA_TYPE_INTEGER_PTR, NODE_TYPE_REF, NULL, NULL, id, NULL);
+    else 
+        return create_node(-1, NULL, DATA_TYPE_STRING_PTR, NODE_TYPE_REF, NULL, NULL, id, NULL);
+
 }
 
 

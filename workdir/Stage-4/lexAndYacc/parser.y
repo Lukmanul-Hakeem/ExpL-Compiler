@@ -25,7 +25,7 @@
 %token PUNCTUATION COMMA NEWLINE
 %token IF ELSE THEN ENDIF 
 %token WHILE DO REPEAT UNTIL BREAK CONTINUE
-%token PLUS MINUS MULT DIV MOD EQUAL LT GT LE GE NOT NE EQ
+%token PLUS MINUS MULT DIV MOD EQUAL LT GT LE GE NOT NE EQ AND
 %token <node> NUM ID STRING_LITERAL
 %token DECL ENDDECL
 %token INT STR
@@ -91,6 +91,22 @@ VarList
     | VarList COMMA ID LSQUARE NUM RSQUARE LSQUARE NUM RSQUARE
         {
             create_symbol_table_entry($3, Type, $5->val, $8->val);
+        }
+    | MULT ID 
+        {
+            if(Type == DATA_TYPE_INTEGER){
+                create_symbol_table_entry($2, DATA_TYPE_INTEGER_PTR, 1, 0);
+            }else {
+                create_symbol_table_entry($2, DATA_TYPE_STRING_PTR, 1, 0);
+            }
+        }
+    | VarList COMMA MULT ID
+        {
+            if(Type == DATA_TYPE_INTEGER){
+                create_symbol_table_entry($4, DATA_TYPE_INTEGER_PTR, 1, 0);
+            }else {
+                create_symbol_table_entry($4, DATA_TYPE_STRING_PTR, 1, 0);
+            }
         }
     ;
 
@@ -173,6 +189,18 @@ AsgStmt
         {
             tnode* arrayNode = create_2D_array_node($1, $3, $6);
             $$ = create_assign_node(arrayNode, $9);
+        }
+    | MULT ID EQUAL E PUNCTUATION
+        {
+            $2 = create_id_node($2);
+            tnode* defrefNode = create_deref_node($2);
+            $$ = create_assign_node(defrefNode, $4);
+        }
+    | ID EQUAL AND ID PUNCTUATION
+        {
+            $1 = create_id_node($1);
+            tnode* addrNode = create_addr_node($4);
+            $$ = create_assign_node($1, addrNode);
         }
 
     ;
@@ -302,6 +330,10 @@ E
     | ID LSQUARE E RSQUARE LSQUARE E RSQUARE
         {
             $$ = create_2D_array_node($1, $3, $6);
+        }
+    | MULT ID
+        {
+            $$ = create_deref_node($2);
         }
     ;
 
