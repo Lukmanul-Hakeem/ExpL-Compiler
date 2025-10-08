@@ -1,0 +1,4 @@
+decl
+    int b[10], a, fn(int c, int b);
+    str c, rev(int c, int b, str a);
+enddecl

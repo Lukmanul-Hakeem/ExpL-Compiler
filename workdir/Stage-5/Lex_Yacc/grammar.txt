@@ -1,0 +1,47 @@
+Program     : GDeclBlock FDefBlock MainBlock
+            | GDeclBlock MainBlock
+            | MainBlock
+            ;
+
+FDefBlock   : FDefBlock Fdef 
+            | Fdef
+            ;      
+
+Fdef        : Type ID LPAREN ParamList RPAREN LBRACE LDeclBlock Body RPAREN 
+            ;
+
+ParamList   : ParamList COMMA Param
+            | Param
+            |
+            ;
+
+Param       : Type ID       
+            | Type ID LSQUARE NUM RSQUARE
+            ;
+
+LDeclBlock  : DECL LDeclList ENDDECL
+            | DECL ENDDECL
+            ;
+
+LDeclList   : LDeclList LDecl 
+            | LDecl
+            ;
+
+LDecl       : Type LidList PUNCTUATION
+            ;
+
+LidList     : LidList COMMA Lid
+            | Lid   
+            ;
+
+
+Lid         : ID
+            | ID LSQUARE NUM RSQUARE
+            ;
+
+Type        : INT                           { type_variable = DATA_TYPE_INTEGER; }
+            | STR                           { type_variable = DATA_TYPE_STRING; }
+            ;       
+
+MainBlock   : INT MAIN LPAREN RPAREN LBRACE LDeclBlock Body RBRACE
+            ;
